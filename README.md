@@ -18,3 +18,8 @@ It shows that migrations of the services provided within the segments offer the 
 All in all, it can be confirmed that the platform for fog computing improves the latencies of communication by the physical proximity between services and objects.
 In addition, the results of this master's thesis show that the provisioning of the services provides further improvements in the latency when dispersed within the individual segments of the Internet of Things.
 This indicates, that all objects could be available to all persons at any time in the future.
+
+## Reference
+["Service management platform to support service migrations for IoT smart city applications."](https://ieeexplore.ieee.org/abstract/document/8292690)  
+*2017 IEEE 28th Annual International Symposium on Personal, Indoor, and Mobile Radio Communications (PIMRC).*  
+IEEE, 2017.
