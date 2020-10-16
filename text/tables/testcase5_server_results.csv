@@ -1,0 +1,7 @@
+repetition;message_size;repetitions_per_minute;migration_time;migration_treshold;migrations_possible;migrations_done;migrations_done_percentage;migration_rejected_mig_tresh;migration_rejected_mig_tresh_percentage;migration_rejected_num1;migration_rejected_num1_percentage;migrations_error;migrations_error_percentage
+2000;14600;10;30;2.0;320;250;78.125;3;0.9375;25;7.8125;42;13.125
+2000;14600;10;30;2.0;244;74;30.327868852459016;20;8.19672131147541;131;53.68852459016394;19;7.786885245901639
+2000;14600;10;30;2.0;408;0;0.0;0;0.0;408;100.0;0;0.0
+2000;14600;10;30;2.0;411;0;0.0;0;0.0;411;100.0;0;0.0
+2000;14600;10;30;2.0;409;0;0.0;0;0.0;409;100.0;0;0.0
+2000;14600;10;30;2.0;409;0;0.0;0;0.0;409;100.0;0;0.0

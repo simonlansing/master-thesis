@@ -1,0 +1,483 @@
+%!TEX root = ../main.tex
+\chapter{Topologische Charakteristika und das Internet der Dinge}
+\label{cha:topologische_charakteristika}
+%kapitel 3: Neben der in der einleitung von kapitel 2 genannten gesichtspunkte, stellt sich auch die frage über der Konnetivität
+Das \gls{IoT} besteht aus einer unzähligen Anzahl heterogener Objekten~\citep{atzori2010internet}.
+Da die Objekte mittels verschiedenster kabelgebundener und kabelloser Übertragungsmedien miteinander verbunden sein können, kann eine vielseitige Zusammensetzung verschiedener Topologien innerhalb des \glsmgen{IoT} angenommen werden.
+Diese zusammengesetzte Topologie des \glsmgen{IoT} soll in diesem Kapitel als ein Graph \(G=\left(V,E\right)\) betrachtet werden.
+Die Menge der Objekte im \gls{IoT} wird in dem Graphen \(G\) durch die Menge der Knoten \(V\) und die vorhandenen Verbindungen zwischen den Objekten als die Menge der Kanten \(E\) repräsentiert.
+\\
+Die in Kapitel~\ref{sec:topologische_verfahren_der_migration} beschriebenen topologischen Verfahren zeigen bereits die Migration einer einzelnen Instanz eines autonomen Dienstes im \gls{IoT}, die zwischen den Objekten innerhalb des \glsmgen{IoT} wandert.
+Die Betrachtung der optimalen Positionierung mehrerer verteilt ausgeführter Instanzen eines einzelnen autonomen Dienstes im \gls{IoT} lässt sich auf das grundlegende \(p\)-Median-Problem in einem Graphen zurückführen.
+Angewandt auf das vorliegende Szenario wird bei dem \(p\)-Median-Problem versucht, \(p\) verschiedene Instanzen eines autonome Dienstes so im \gls{IoT} zu positionieren, dass der durchschnittliche Abstand zwischen den anfragenden Objekten und der zu ihnen nächstgelegenen Instanz minimiert wird.
+Die Minimierung gewichtet sich dabei auf Grundlage der Nachfragegröße der anfragenden Objekte, die bei den topologischen Verfahren in Kapitel~\ref{sec:topologische_verfahren_der_migration} beschrieben ist.
+Auf allgemeine Graphen ohne bekannten Aufbau der Topologie, wie es in dem Szenario des \glsmgen{IoT} der Fall ist, kann das \(p\)-Median-Problem allerdings nicht angewendet werden, es ist \(\mathcal{N\hspace{-0.5mm}P}\)-schwer~\citep[Kapitel~2]{laporte2015location}.
+Der Fokus dieser Arbeit richtet sich daher auf die Bereitstellung einer einzelnen Instanz eines autonomen Dienstes im \gls{IoT}.
+Für die Bereitstellung mehrerer Instanzen eines autonomen Dienstes in einem segmentierten, verteilten \gls{IoT} wäre hier die Bereitstellung in den einzelnen \gls{IoT}-Segmenten durch die Bildung von Mikro-Fogs möglich, wie es bereits in Kapitel~\ref{cha:motivation} beschrieben ist.
+\\
+Zur Ausführung der topologischen Verfahren werden zunächst die bewertbaren Systemeigenschaften aus dem zugrundeliegenden \gls{IoT} benötigt.
+Dies sind statistischen Daten, die sogenannten \textit{Leistungsmetriken}, die entweder zuvor oder von dem in Kapitel~\ref{cha:service_manager} definierten Service~Manager während der Laufzeit des autonomen Dienstes im \gls{IoT} erhoben werden.
+%Sie werden in Kapitel~\ref{sec:leistungsmetriken_im_iot} verglichen.
+%In Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed}
+Darauf folgt die Auswahl und die Aufnahme der geeigneten Leistungsmetriken aus dem \gls{MIOT}-Testbed zur Emulation der Szenarien aus Kapitel~\ref{sec:positionierung_der_autonomen_dienste}.
+Wie diese dem später definiertem Service~Manager für die Emulation bereit gestellt werden, wird durch die Definition einer Datenstruktur gezeigt.
+%in Kapitel~\ref{sec:datenstruktur_der_topologischen_charakteristika} gezeigt.
+Abschließend werden 
+%in Kapitel~\ref{sec:messergebnisse_und_auswertung}
+die aus dem \gls{MIOT}-Testbed aufgenommenen Leistungsmetriken ausgewertet und miteinander verglichen.
+
+\section{Leistungsmetriken im Internet der Dinge}
+\label{sec:leistungsmetriken_im_iot}
+Die nachstehenden Leistungsmetriken bilden die Grundlage für mögliche Migrationen eines autonomen Dienstes im \gls{IoT}.
+Sie lassen sich anhand ihres Aufnahmezeitpunktes in zwei Gruppen einteilen.
+Die Leistungsmetriken der erste Gruppe werden vor der eigentlichen Ausführung eines autonomen Dienstes bei der Vermessung des Systems als eine Momentaufnahme ermittelt (vgl.~Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed}).
+Die Ermittlung der Leistungsmetriken der zweite Gruppe geschieht kontinuierlich während der eigentlichen Prozessausführung des autonomen Dienstes und des Service~Managers aus Kapitel~\ref{cha:service_manager}.
+
+%Tabelle der leistungsmetriken in gruppen
+%						zuvor		während laufzeit	kante	node
+%Minimal Hop Count		
+%Durchsatz
+%%ETX
+%Latenzzeiten / RTT
+%Overhead
+%Auslastung der Objekte durch den Service
+%%	CPU
+%%	RAM
+%	Speicher
+
+\subsection{Minimaler Hop Count}
+Die einfachste Leistungsmetrik in einem Netzwerk ist der \textit{Hop Count}.
+Er gibt an über wie viele routingfähige Netzwerkgeräte eine Nachricht durch das Netzwerk geleitet wird bis sie zum Ziel gelangt.
+Der Hop Count wird im IP-Header eines Netzwerkpakets zu Beginn auf einen vordefinierten Wert festgelegt und von jedem routingfähigen Netzwerkgerät auf seinem Weg herunter gezählt. Im IPv4-Header ist dafür das Feld \textit{\gls{TTL}} und im IPv6-Header das Feld \textit{hop limit} vorgesehen.
+Damit Netzwerkpakete nicht unendlich lange durch ein Netzwerk weitergeleitet werden, wird die weitere Weiterleitung bei einem Hop Count Wert von 0 unterbunden.
+\\
+Sind die Routingpfade durch das Netzwerk durch ein statisches Routing bereits im Voraus bekannt, können die Hop Count Werte für alle Verbindungen zwischen allen Geräten bereits vorberechnet werden.
+Diese Leistungsmetrik ist jedoch sehr ungenau, um die optimale Länge einer Route zwischen dem Start- und Zielobjekt zu bestimmen, da alle Verbindungen zwischen zwei Geräten gleich behandelt und die Geschwindigkeit, Auslastung, Zuverlässigkeit und die Latenzen auf den Leitungen zwischen den einzelnen \glspl{Hop} hier nicht berücksichtigt werden.
+
+\subsection{Durchsatz}
+\label{subsec:durchsatz}
+Der \textit{\glsfirst{Durchsatz}} einer Verbindung zwischen zwei Netzwerkgeräten ist im Sinne dieser Masterarbeit die maximal erreichbare Datenrate während der erfolgreichen Übertragung einer Nachricht über einen Kommunikationskanal.
+Im \gls{IoT} ist der Kommunikationskanal die Verbindung zwischen zwei Objekten, welche sowohl kabelgebunden als auch kabellos erfolgen kann.
+Die Einheit des gemessenen \glsmgen{Durchsatz} ist Bits pro Sekunde \(\left(bits/s\right)\).
+Fällt die Betrachtung auf die Menge der übertragbaren Daten, die als reine Nutzdaten auf Applikationsebene verfügbar sind, wird der Durchsatz als Datendurchsatz (engl. Goodput) spezifiziert.
+Dabei ist zu beachten, dass sowohl die \gls{Mehrkosten} der Protokolle als auch die erneute Datenpaketübertragung im Fehlerfall in der Angabe zum Datendurchsatz ausgeschlossen werden.
+\\
+Da der Durchsatz eine entscheidende Messgröße für eine Verbindung ist und die obere Schranke für die Datenübertragung über einen Kommunikationskanal darstellt, ist es ein wichtiges topologisches Charakteristika im \gls{IoT}.
+Aus diesem Grund erfolgt im Laufe dieser Arbeit eine detaillierte Messaufnahme, die im nachstehenden Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed} beschrieben wird.
+Bei der Messaufnahme ist der \gls{Durchsatz} abhängig von der Größe der gesendeten Nachrichten, sodass diese sich über alle Messungen hinweg für eine Vergleichbarkeit nicht verändern sollte~\citep{das2007studying}.
+
+\subsection{Expected Transmission Count (ETX)}
+\label{subsec:etx}
+Eine weitere Leistungsmetrik ist die \gls{ETX} nach~\citep{de2005high}.
+\gls{ETX} ist eine unidirektionale Metrik, die separat für beide Richtungen einer kabellosen Verbindung zwischen zwei Netzwerkgeräten den Effekt der Verlustrate beider Verbindungen beschreibt.
+Sie wurde entwickelt, um eine hohe Güte in der Übertragung auf verlustbehafteten Verbindungen zu erreichen und so den Durchsatz im Netzwerk zu erhöhen.
+Zwar unterstützen die Mechanismen von \gls{IEEE}~802.11 bereits den erneuten Versand einer Nachrichten bei Verlust, doch das auf Kosten des Durchsatzes.
+Mit dieser Metrik sollen bereits während der Suche einer geeigneten Route die besten Zwischenverbindungen durch ein Netzwerk gewählt werden, sodass die Häufigkeit der erneuten Versendungen minimiert wird.
+\\
+Die \gls{ETX} einer Verbindung ist definiert als die prognostizierte Anzahl von Datenübertragungen samt Wiederholungen, um ein Datenpaket über eine Verbindung zu senden.
+Dabei liegt der Wert von \gls{ETX} zwischen 1 und unendlich.
+Je näher der Wert an 1 ist, desto besser ist die Verbindung.
+Auf einer Route ist \gls{ETX} die Summe der einzelnen \gls{ETX}-Werte der beteiligten Verbindungen.
+Die Berechnung von \gls{ETX} einer Verbindung erfolgt auf Basis der zwei gemessenen Wahrscheinlichkeiten nämlich, dass ein Paket vom Sender erfolgreich beim Empfänger ankommt \(d_f\) und dass die Bestätigung des Pakets vom Empfänger am Sender ankommt \(d_r\).
+Die erwartete Gesamtwahrscheinlichkeit für den erfolgreichen Abschluss der Sendung und Bestätigung eines Pakets ist somit \(d_f \times d_r\).
+Da jeder Versandversuch eines Pakets als Bernoulli-verteilt angesehen werden kann, liegt der Erwartungswert für \gls{ETX} bei der folgenden Gleichung~\ref{eqn:etx_calculation}:
+\begin{IEEEeqnarray}{rCl} \label{eqn:etx_calculation}
+	\text{ETX} &= \frac{1}{d_f \times d_r}
+\end{IEEEeqnarray}
+Durch genaue Messungen der Verbindungsverluste soll \gls{ETX} präzise zwischen unterschiedlichen Routen entscheiden können.
+\citeauthor{de2005high} präsentieren dazu ein Messverfahren, bei dem innerhalb eines Zeitfensters spezielle Pakete mit einer festgelegten Größe zur Verbindungsuntersuchung zwischen den Netzwerkgeräten als \gls{Broadcast}-Nachrichten gesendet werden. Durch die Übertragung als \gls{Broadcast}-Nachrichten werden diese durch \gls{IEEE}~802.11 nicht bestätigt oder erneut versandt~\citep{de2005high}.
+\\
+Da \gls{ETX} eine genauen Repräsentation der einzelnen Netzwerkverbindungen im \gls{Mesh}-Netz\-werk widerspiegelt, wird es als eine grundlegende Leistungsmetrik für das zu untersuchende \gls{IoT} aufgenommen.
+Die genaue Messung wird dazu in Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed} beschrieben.
+
+
+%Assuming 802.11 link-layer acknowledgments  (ACKs) and retransmissions:
+
+%P(TX success) = P(Data success) x P(ACK success)
+
+%Link ETX = 1 /  P(TX success)
+%= 1 /  [ P(Data success) x P(ACK success) ]
+
+%Estimating link ETX:
+%P(Data success) ~=  measured fwd delivery ratio rfwd
+%P(ACK success) ~= measured rev delivery ratio rrev
+%Link ETX  ~=  1 / (rfwd x rrev)
+%https://pdos.csail.mit.edu/archive/grid/mobicom03-mark-II.ppt
+
+\subsection{Expected Transmission Time (ETT)}
+Mit der \gls{ETT} zeigen die Autoren in~\citep{draves2004routing} eine Metrik für kabellose \gls{Mesh}-Netzwerke, in denen mehreren, parallele Funkkanäle zum Einsatz kommen.
+Die Metrik ist eine Kombination aus dem \gls{Durchsatz} und der \gls{ETX} für ein Paket, das über eine Verbindung übertragen wird, wobei die \gls{ETT} als eine an den \gls{Durchsatz} angepasste \gls{ETX} bezeichnet wird.
+Bei der folgenden Gleichung~\ref{eqn:ett_calculation} ist \(S\) als die Größe der Pakete und \(B\) als der \gls{Durchsatz} einer Verbindung definiert:
+\begin{IEEEeqnarray}{rCl} \label{eqn:ett_calculation}
+	\text{ETT} &= \text{ETX} \times \frac{S}{B}
+\end{IEEEeqnarray}
+So zeigt sich hier die Anpassung, dass sich bei einer Größenveränderung individueller Pakete ebenfalls die \gls{ETT} ändert.
+Wie bei der \gls{ETX} wird die \gls{ETT} einer Route durch die Summe der einzelnen \gls{ETT}-Werte der beteiligten Verbindungen berechnet.
+Die Besonderheit liegt hier jedoch in einer Erweiterung, bei der zusätzlich zur Bildung von Summen auch die Interferenzen zwischen zwei Verbindungen zum Ausdruck kommen.
+Bei einer Route, bei der zwei Verbindungen in der Nähe den gleichen Funkkanal verwenden, kann schließlich nur eine Verbindung zur gleichen Zeit senden.
+Daher werden bei der Auswahl von Routen durch das Netzwerk die Verbindungen bevorzugt, bei denen eine hohe Vielfalt an Funkkanälen vorkommt.
+\\
+Die \gls{ETT} bietet sich als Erweiterung zu \gls{ETX} bei der Auswahl von Routen in \gls{Mesh}-Netzwerken mit mehreren, parallelen Funkkanälen an.
+Vorausschauend auf die Emulation des \gls{MIOT}-Testbeds durch ein \gls{SDN} in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} ist die Metrik jedoch nicht weiter von Vorteil, da die parallelen Funkkanäle durch das \gls{SDN} nicht emuliert werden können und die \gls{ETT} daher bei dem Aufbau des Netzwerkes sowie der Bildung von Routen nicht weiter verwendet werden kann.
+%https://www.inet.tu-berlin.de/fileadmin/fg234_teaching/SS11/IR_SS11/ir11_wireless_04_wireless_link.pdf
+
+\subsection{Latenzzeit}
+\label{subsec:latenzzeit}
+Eine essenzielle Kennzahl während der Übertragung von Daten durch ein Netzwerk ist die Latenzzeit und im Speziellen die \gls{RTT}.
+Um das \gls{IoT} in eine greifbare Nähe und der Interaktion mit Menschen bringen zu können, müssen die Latenzzeiten zwischen dem Auslösen eines Ereignisses bis zur Ausführung eines Prozesses weitestgehend minimiert werden~\citep{fettweis20125g}.
+\citeauthor{fettweis2014tactile} beschreibt dazu das \gls{Taktile Internet}~\citep{fettweis2014tactile,fraunhofer2016taktiles}.
+Dienste, wie die im \gls{IoT} (vgl.~Kapitel~\ref{sec:dienste_im_internet_der_dinge}), werden als \gls{Echtzeit} definiert, wenn die Antwortzeit der Kommunikation geringer ist als die Laufzeitkonstanten der Anwendung selber und somit die durch Kommunikation und internen Berechnungen entstandene Verzögerungen vernachlässigbar sind.
+Die Laufzeitkonstanten verschiedener Anwendungen teilt \citeauthor{fettweis2014tactile} dabei in vier verschiedene Typen mit absteigender Größe ein: muskulär mit 1~s, audio mit 100~ms, visuell mit 10~ms und taktil mit 1~ms~\citep{fettweis20125g}.
+Erst wenn der taktile Typ bei Anwendungen respektive den Diensten mit einer \gls{RTT} von 1~ms oder weniger erreicht ist, spricht man vom taktilen Internet.
+Dieses gilt es durch neue Technologien im Bereich der Datenkommunikation sukzessiv zu erreichen.
+So gibt es bereits bei den kabellosen Kommunikationstechnologien von 5G, dem Nachfolger von LTE, die Bestrebungen, eine Ende-zu-Ende-Latenzzeit von 1~ms zu erreichen~\citep{fettweis20125g}.
+\\
+Dienste im \gls{IoT}, die diesen Typen gerecht werden wollen, sollten also diese Laufzeitkonstanten in ihrer Kommunikation einhalten.
+Strategien, wie die Migration der Dienste nach Kapitel~\ref{cha:autonome_dienste}, können bei der Verwirklichung solcher Anforderungen helfen.
+
+%Skalierung durch Migration
+%\subsection{Overhead (Auslastung des Netzes)}
+%\textcolor{red}{overhead sollte minimeirt werden, daher wenig synchronisationstraffic zwischen mehreren instasnzen %eines dienstes notwendig, muss es unbedingt mehrere instanzen geben? -> je nach iot}
+
+\subsection{Eigenschaften der Objekte}
+\label{subsec:eigenschaften_der_objekte}
+Neben den topologischen Charakteristika, bei denen die Kommunikation zwischen den Objekten im \gls{IoT} zum Ausdruck kommt, haben die Objekte selber weitere Eigenschaften, die für die Migration eines Dienstes ebenso relevant sind.
+Durch die eingeschränkt vorhandenen Ressourcen der Objekte werden weitere Kriterien geschaffen, auf deren Basis Entscheidungen für die auf dem Objekt laufenden Dienste getroffen werden müssen~\citep{atzori2010internet,al2015internet}.
+Die Ressourcen können beispielsweise die verfügbare Energie, Prozessorleistung und die Kapazitäten von Arbeits- und Datenspeicher sein.
+Beansprucht ein Dienst auf einem Objekt im \gls{IoT} einen großen Anteil einer bestimmten Ressource, könnte der Dienst zu einer anderen Position migriert werden, bei der die Gesamtkapazität dieser Ressource höher ist.
+Naheliegend ist als Alternative die Duplikation des Dienstes auf mehrere parallel laufender Objekte im \gls{IoT}.
+\\
+Mehrere Instanzen des gleichen Dienstes würden sich dabei die Aufgaben der anfragenden Clients teilen.
+Dadurch entstehen allerdings gleich mehrere nichttriviale Probleme, die es zu lösen gilt.
+Zunächst ist eine \gls{Lastverteilung} notwendig, sodass eine gleichmäßige Aufteilung der Clients auf die verschiedenen Instanzen des Dienstes im \gls{IoT} erfolgt.
+% \textcolor{red}{Gorlatch Vorlesung Parallele?}.
+Dies entspricht der Unterteilung in einzelne kleine Mikro-Fogs~\citep{al2015internet}.
+Weiterhin wird durch die Duplikation eine Abhängigkeit der Instanzen des Dienstes untereinander gebildet.
+Da diese Instanzen der Dienste im \gls{IoT} die Daten der verschiedenen Objekte bearbeiten, kann eine inkonsistente Datenhaltung zwischen den dienstausführenden Objekten im \gls{IoT} entstehen, die entweder eine Synchronisation zwischen den Instanzen des Dienstes oder eine Interaktion mit einer entfernten \gls{Cloud}-Infrastruktur erfordern~\citep{bonomi2014fog}.
+Die dabei entstehende Kommunikation führt schließlich zu einem nicht zu vernachlässigbaren Anteil an \gls{Mehrkosten}. 
+%\textcolor{red}{Gorlatch Vorlesung Parallele Systeme "OVERHEAD-URSACHEN"}.
+Die Kommunikation bei der Synchronisierung einer solchen verteilten Anwendung mag auf der lokalen Ebene noch zuverlässig funktionieren, ist jedoch auf einer globalen Ebene, wie die des \glsmgen{IoT}, nur sehr schwer zu realisieren~\citep[Kapitel~1.2]{tanenbaum2007distributed}.
+Letzten Endes muss über die Entfernung der anfragenden Objekte zu dem dienstausführenden Objekt und der Ressourcenknappheit entschieden werden, ob eher eine Migration oder eine Duplikation für einen Dienst während der Ausführung sinnvoller ist.
+%\section{title}
+%\subsection{Skalierbarkeit}
+%\subsection{Security}
+%\subsubsection{Big Data}
+%\subsubsection{Private Cloud}
+
+
+%\section{Aufnahmeverfahren der Leistungsmetriken}
+%\label{sec:aufnahmeverfahren_der_leistungsmetriken}
+%-> Auswahl messbarer Leistungsmetriken
+%->ETX
+%->Throughput
+%Fog computing 
+%Vaquero LM, Rodero-Merino L (2014) Finding your way in the fog: towards a comprehensive definition of fog computing. SIGCOMM Comput Commun Rev 44(5):27–32
+
+%piggypacked nodes
+%messages incoming from next neighbor
+%Momentaufnahme und Sniffing
+
+\section{Analyse der Leistungsmetriken im MIOT-Testbed}
+\label{sec:analyse_der_leistungsmetriken_im_miot_testbed}
+Die Untersuchungen der in Kapitel~\ref{cha:autonome_dienste} beschriebenen Migration autonomer Dienste im \gls{IoT} soll mithilfe einer Emulation des \gls{MIOT}-Testbeds an der Westfälischen Wilhelms-Universität in Münster geschehen.
+Das \gls{MIOT}-Testbed besteht aus derzeit 60 sogenannten \gls{MIOT}-Nodes zur Forschung an kabellosen \gls{Mesh}-Netzwerken und dem \gls{WSN}.
+Die Nodes und das \gls{MIOT}-Testbed sind dabei Äquivalente zu den Objekten im \gls{IoT}.
+Für die nachstehenden Untersuchungen enthält jede dieser Nodes ein eingebettetes System und bis zu drei \gls{IEEE}~802.11 Netzwerkkarten.
+Das Betriebssystem des eingebetteten Systems basiert auf der Linux-Distribution Ubuntu.
+Durch die drei Netzwerkkarten in den \gls{MIOT}-Nodes bilden sie zusammen ein gemeinsames \gls{Mesh}-Netzwerk, das in drei IP-Subnetze aufgeteilt ist.
+Über unterschiedliche Frequenzen spannen sie dabei drei physikalisch voneinander getrennte \gls{IEEE}~802.11 Netzwerke im Frequenzbereich um 2,4 Ghz auf~\citep{MIOTtestbed}.
+Dadurch resultiert eine variable Erreichbarkeit zwischen den im gesamten Campus verteilten \gls{MIOT}-Nodes unter anderem durch die räumliche Entfernung zwischen den einzelnen Nodes als auch durch die Ausrichtung der Antennen.
+\\
+Aufgrund von kontinuierlichen Erweiterungen und laufenden Umbaumaßnahmen sind jedoch nicht immer alle Nodes des \gls{MIOT}-Testbeds konstant verfügbar.
+Dadurch können die Messaufbauten zwischen den zu untersuchenden Szenarien aus Kapitel~\ref{sec:positionierung_der_autonomen_dienste} bei der Emulation im \gls{MIOT}-Testbed variieren.
+Zur Lösung dieses Problems soll das \gls{MIOT}-Testbed zusätzlich mithilfe von \gls{SDN} durch ein \gls{Virtual Network Emulator} emuliert werden~\citep{keti2015emulation}.
+%(vgl.~Kapitel~\ref{sec:emulationsumgebung_software_defined_network}).
+Die Emulation schafft außerdem die Möglichkeit, die Anforderungen der verschiedenen Szenarien einfacher abzubilden (vgl.~Abbildung~\ref{fig:internet_and_iot_segments}), sodass die Migration autonomer Dienste auch innerhalb einer globalen Größe eines \glsmgen{IoT} emuliert werden kann.
+Die Untersuchung dazu ist in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} zu finden.
+\\
+Für eine realitätsnahe Emulation durch ein \gls{SDN} ist allerdings die Analyse und Aufnahme der gesamten Netzwerktopologie des \gls{MIOT}-Testbeds anhand ausgewählter Leistungsmetriken aus Kapitel~\ref{sec:leistungsmetriken_im_iot} notwendig.
+Durch die Aufnahme sollen schließlich die Objekte und all ihre Verbindungen untereinander genau definiert werden.
+Diese Art der Analyse der Netzwerktopologie kann zwar in einer realen Umgebung mit vielen Objekten im \gls{IoT} aufgrund der Größe nicht durchgeführt werden, jedoch vereinfacht sie die Untersuchungen der Szenarien erheblich.
+Neben der Möglichkeit zur Emulation des \gls{MIOT}-Testbeds ist mit diesem Vorgehen auch die Realisierung des in Kapitel~\ref{sec:topologische_verfahren_der_migration} vorgestellte topologischen Verfahren zur Migration autonomer Dienste im \gls{IoT} auf Grundlage der globalen Informationen möglich.
+Große Anpassungen bei der Kommunikation zwischen den Clients und dem autonomen Dienstes, wie das Übertragen der Nachbarschaft der Objekte im \gls{IoT}, wie sie bei TopoCenter(n) gemacht werden müssen, sind hier nicht notwendig (vgl.~Kapitel~\ref{subsec:topocenter_n}).
+\\
+Zunächst ist zu analysieren, welche Leistungsmetriken aus Kapitel~\ref{sec:leistungsmetriken_im_iot} sich für die Darstellung des \gls{MIOT}-Testbeds durch ein \gls{SDN} eignen.
+Bei der Betrachtung einer einzelnen Verbindung zwischen zwei Objekten im \gls{IoT} sind vor allem zwei Leistungsmetriken maßgebend, die \gls{ETX} und der \gls{Durchsatz}.
+Durch \gls{ETX} lassen sich zum einen die Paketverluste bei Verbindungen emulieren.
+Zum anderen bestimmt der Durchsatz die obere Schranke der Datenmenge, die über eine Verbindung pro Zeiteinheit übertragen werden kann.
+Diese beiden Leistungsmetriken werden auch von dem \gls{Virtual Network Emulator} in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} zur Erstellung einer in ihren Ressourcen eingeschränkten Verbindung benötigt.
+%Latenz (nein, Signallaufzeit, die wird nicht gemessen) sagt nur aus, wie pyhsikalisch weit entfernt die Objekte zueinander sind
+Die Latenzzeit respektive die \gls{RTT} ist hingegen abhängig von einigen Störfaktoren.
+Dies können beispielsweise die momentane Auslastung des autonomen Dienstes auf den Objekten sein oder auch die momentane Auslastung einer Verbindung zwischen zwei Objekten.
+%\textcolor{red}{Quelle finden zu Störfaktoren für Latenzzeit}.
+Sie eignet sich daher nicht direkt als grundlegende Leistungsmetrik zur Bereitstellung eines \glsmgen{SDN}.
+Doch die \gls{RTT} kann bei der Evaluation in Kapitel~\ref{cha:evaluation} als eine variable Leistungsmetrik verwendet werden, um die Szenarien untereinander zu vergleichen (vgl.~Kapitel~\ref{sec:testfaelle_dienste_im_iot}).
+Die weiteren Leistungsmetriken, wie die Eigenschaften der Objekte, können darüber hinaus als Entscheidungskriterien für weitere Aktionen bei der Ausführung des autonomen Dienstes in Verwendung treten (vgl.~Kapitel~\ref{sub:entwurfsmuster_und_architektur_network_utilization_inspector}).
+\\
+Die Autoren \citeauthor{das2007studying} untersuchten bereits einige Leistungsmetriken in \gls{Mesh}-Netzwerken.
+Dabei präsentieren sie vier für diese Analyse relevante Ergebnisse, die zur Bildung von Rahmenbedingungen für die nachstehende Aufnahme beitragen~\citep{das2007studying}:
+\newpage
+\begin{itemize}
+	\item Die Qualität aller Verbindungen innerhalb eines Netzwerkes variiert über die Zeit unabhängig von ihrer Güte.
+	\item Typische Verbindungen verändern die Qualität allerdings nicht innerhalb weniger Sekunden.
+	\item Die aufgenommenen Metriken hängen von dem Verfahren der Messaufnahme ab.
+	\item Die Leistungsmetriken werden durch Hintergrundübertragungen externer Einflüsse negativ beeinflusst.
+\end{itemize}
+Im Detail zeigen die Autoren, dass die Stabilitäten der Metriken über den Tag verteilt signifikante Unterschiede aufweisen, die in externen Einflüssen begründet sind.
+Während der Arbeitszeiten werden die Verbindungen durch Bewegungen von Personen gestört, in der Nacht hingegen sind sie weitestgehend stabil.
+Dabei zeigt die Leistungsmetrik \gls{Durchsatz} über mehreren Messungen hinweg zusätzlich eine viel höhere Stabilität gegenüber der \gls{ETX} auf.
+Einen hohen Einfluss auf die Leistungsmetrik \gls{ETX} soll zudem das ausgewählte Messverfahren haben.
+Zur Erzielung genauerer Messergebnisse empfehlen die Autoren bei der Messaufnahme von \gls{ETX} beispielsweise die Verwendung von Unicast- anstelle von Broadcast-Messungen.
+\\
+Auf dieser Grundlage aufbauend sollen nun die beiden Leistungsmetriken \gls{Durchsatz} und \gls{ETX} im \gls{MIOT}-Testbed zur Bereitstellung eines \glsmgen{SDN} aufgenommen werden.
+Dies geschieht innerhalb des \gls{MIOT}-Testbeds mittels zwei verschiedener Programme, die über das Webinterface, das der Verwaltung von Experimenten auf dem \gls{MIOT}-Testbed dient, auf den einzelnen \gls{MIOT}-Nodes initialisiert und ausgeführt werden können.
+Bei der Messung des \glsmgen{Durchsatz} kommt das Netzwerkdurchsatz-Messtool \textit{iperf} zum Einsatz~\citep{iperf}. Über eine Client-Server-Architektur sendet es als Anwendung über \gls{TCP} oder \gls{UDP} Datenpakete und misst so den Durchsatz zwischen zwei Netzwerkgeräten.
+Alle verfügbaren \gls{MIOT}-Nodes stellen zunächst parallel einen iperf-Server bereit.
+Darauf folgt eine sequenzielle Messung zwischen diesen Nodes über die iperf-Clients.
+Da die drei \gls{IEEE}~802.11 Netzwerkkarten jeweils ein eigenes IP-Subnetz aufbauen, soll auch in allen drei Teilnetzen des \gls{Mesh}-Netzwerk jeweils eine Messung durchgeführt werden.
+Abschließend werden alle Messergebnisse über das \gls{MIOT}-Testbed aggregiert.
+Da die \gls{MIOT}-Nodes standardmäßig keine Routing-Informationen besitzen, können die iperf-Messungen nur zwischen den Clients und Servern durchgeführt werden, die sich auch in einer unmittelbaren Nähe befinden.
+Der folgende Quellcode~\ref{lst:miot_experiment_iperf_measurement} beschreibt eine Messdurchführung mittels iperf als ein Experiment über das Webinterface des \gls{MIOT}-Testbeds.
+Der in Zeile~2 gestartete iperf-Server wird zur finalen Terminierung des Experiments nach 85.500~s (23,75~h) automatisch gestoppt, darauf folgt die Zusammenfassung der Kommandozeilenausgaben mithilfe des dem \gls{MIOT}-Testbed bereitgestellten Python-Skripts \inlinecode{save-stdout.py}.
+Der iperf-Client in Zeile~4 wird sequenziell zwischen allen Nodes und allen Netzwerkkarten durchgeführt.
+Eine sequenzielle Aufrufreihenfolge aller Nodes verhindert, dass sich diese bei ihrer Untersuchung im \gls{MIOT}-Testbed gegenseitig beeinflussen.
+Würden \gls{MIOT}-Nodes in der gleichen Nachbarschaft zur gleichen Zeit eine Messung durchführen, könnten die Netzwerke belastet sein und die Messungen signifikant beeinflusst werden.
+Aufgrund der Stabilität der Leistungsmetrik \gls{Durchsatz} ist hier eine Messdauer von 60~s ausreichend~\citep{das2007studying}.
+Nach Durchlauf aller Messungen wird auch die Kommandozeilenausgabe mithilfe des Python-Skripts  \inlinecode{iperf-results.py} aggregiert.
+%\textcolor{red}{Von Tim die beiden skripte save-stdout und iperf-results schicken lassen}
+\newpage
+\begin{lstlisting}[
+	caption=MIOT-Experiment zur Messung des Durchsatzes im MIOT-Testbed mittels iperf,
+	label=lst:miot_experiment_iperf_measurement,
+	name=MIOT-Experiment zur Messung des Durchsatzes im MIOT-Testbed mittels iperf,
+	style=MyBash]
+ true;
+ iperf -s
+ sleep 60
+ iperf -c {all.*wireless} -t 60
+\end{lstlisting}
+Die Messung der \gls{ETX} zwischen allen \gls{MIOT}-Nodes erfolgt mithilfe des Diagnosewerkzeugs \textit{ping}~\citep{ping}.
+Ping ermöglicht eine einfache Überprüfung der Erreichbarkeit der \gls{MIOT}-Nodes untereinander durch den Versand sogenannter \gls{ICMP}-Pakete, die Bestandteil von \gls{IPv4} sind.
+%\textcolor{red}{ICMP Erklären/Echo aus request reply}
+Ist \gls{IPv6} im Einsatz, werden hier ICMPv6-Pakete verwendet.
+Ähnlich dem Vorgehen zur Ermittlung des \glsmgen{Durchsatz} werden Unicast-Nachrichten zwischen allen Nodes gesendet.
+Da ping bereits Bestandteil von \gls{IPv4} ist, muss keine spezielle Anwendung gestartet werden.
+Die Nodes, die sich in der Nähe befinden, antworten von allein auf die Nachrichten.
+Der Quellcode~\ref{lst:miot_experiment_ping_measurement} zeigt die Messdurchführung mittels ping als ein Experiment über das Webinterface des \gls{MIOT}-Testbeds.
+\begin{lstlisting}[
+caption=MIOT-Experiment zur Messung der ETX im MIOT-Testbed mittels ping,
+label=lst:miot_experiment_ping_measurement,
+name=MIOT-Experiment zur Messung der ETX im MIOT-Testbed mittels ping,
+style=MyBash]
+true;
+sleep 60
+sudo ping -q -B -c 10000 -s 484 -l 3 -p 0f1e2d3c4b5a6978 -f {all.*wireless}
+\end{lstlisting}
+Der ping-Befehl wird dabei mit verschiedenen Parametern gestartet, die im folgenden beschrieben werden:
+\begin{itemize}
+	\item \textit{-q:} Es wird nur die finale Zusammenfassung auf der Kommandozeile ausgegeben.
+	\item \textit{-B:} Die zu Beginn ausgewählte Quelladresse wird über den gesamten Verlauf von ping beibehalten.
+	\item \textit{-c 10000:} Pro Verbindung werden jeweils 10.000 \gls{ICMP}-Request-Pakete gesendet. Durch die hohe Wiederholungszahl wird eine erhöhte Genauigkeit über einen längeren Messzeitraum erlangt.
+	\item \textit{-s 484:} Die Datenmenge des \gls{ICMP}-Pakets beträgt 484 Bytes, in der Standardkonfiguration sind es 56 Bytes. Zusammen mit dem 8 Bytes großen \gls{ICMP}-Header und den 20 Bytes des \gls{IPv4}-Headers wird die \gls{MTU} auf 512 Bytes abgestimmt. Sehr schwache Verbindungen sollen so zuverlässig erkannt werden. %Ein höherer Wert bringt keinen signifikanten Mehrwert.
+	\item \textit{-l 3:} Es werden immer drei Nachrichten parallel ausgesendet, ohne dass bereits eine Antwort zur vorherigen Nachricht erhalten wurde (ergänzt sich mit dem Flag \textit{-f}).
+	\item \textit{-p 0f1e2d3c4b5a6978:} Das Pattern füllt das Paket mit bis zu 16 Bytes im Datenbereich auf, sodass das Datenfeld nicht nur aus Nullen besteht.
+	\item \textit{-f:} Die \gls{ICMP}-Requests werden sequenziell sofort nach Erhalt der Antwort zur letzten Nachricht ausgesendet. Falls die Antworten zu langsam sind, wird die Rate auf mindestens 100 pro Sekunde festgelegt.
+\end{itemize}
+Schließlich wird die Kommandozeilenausgabe ebenfalls mittels des Python-Skripts \inlinecode{save-stdout.py} zusammengetragen.
+Während der langanhaltenden Messung des Experiments von neun Tage wurden die einzelnen Messungen zu verschiedenen Tageszeiten erhoben.
+Da externe Einflüsse einen Einfluss auf die \gls{ETX} nehmen, können Unterschiede in den Aufnahmen entstanden sein~\citep{das2007studying}.
+Allerdings ist eine Aufnahme ohne diese Schwankungen nicht möglich, weshalb sie für die weitere Verarbeitung hingenommen werden.
+
+\section{Datenstruktur der topologischen Charakteristika}
+\label{sec:datenstruktur_der_topologischen_charakteristika}
+Die in Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed} im \gls{MIOT}-Testbed aufgenommenen Leistungsmetriken \gls{Durchsatz} und \gls{ETX} werden den beiden Programmen iperf und ping als Rohdaten entnommen.
+Da der Service Manager in Kapitel~\ref{cha:service_manager} die Kalkulationen zur Findung eines besseren Knotens auf Grundlage der Leistungsmetriken durchführt und das \gls{SDN} in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} aus diesen Rohdaten erzeugt wird, muss eine effiziente Datenstruktur erstellt werden, mit der diese Leistungsmetriken zwischen den Knoten transportiert, strukturiert verwaltet und bereitstellt werden können.
+\\
+Da das \gls{IoT} durch einen Graphen \(G=\left(V,E\right)\) mit \(V\) als Menge der Knoten respektive Objekten im \gls{IoT} und \(E\) als Menge der Kanten respektive Verbindungen zwischen den Objekten repräsentiert werden kann, sollen die erhobenen Rohdaten zunächst in einen Graphen eingebettet werden.
+Ohne Beachtung der Messungen der Leistungsmetriken können die folgenden Eigenschaften bereits aus der Definition eines \gls{Mesh}-Netzwerkes in die Graphentheorie übersetzt werden:
+\begin{itemize}
+	\item Aus der Eigenschaft des \gls{Mesh}-Netzwerkes, dass eine Node sich stets selbst erreichen kann, folgt ein vollständig mit Schleifen besetzter Graph.
+	\item Die multiplen Netzwerkkarten pro Node erlauben Mehrfachkanten zwischen zwei Knoten des Graphens. %\textcolor{red}{Quelle Mehrfachkanten}
+	\item Teilgraphen über drei oder mehr Nodes können vollständige Graphen bilden.
+	Der Graph mit allen Nodes enthält somit Zyklen.
+\end{itemize}
+Zu diesen Eigenschaften lassen sich zwei weitere Eigenschaften des Graphens aus den Ergebnissen der Messungen entnehmen.
+Zum einen existieren zwischen den Nodes des \gls{MIOT}-Testbeds nicht nur bidirektionale, sondern auch vereinzelt unidirektionale Verbindungen.
+Diese werden durch gerichtete Kanten im Graphen repräsentiert.
+Zum anderen sind auch bei den bidirektionalen Verbindungen Messschwankungen vorhanden.
+Somit sind alle Kanten im Graphen in beiden Richtungen gerichtet und mit unterschiedlicher Gewichtung dargestellt.
+Diese Eigenschaften des Graphens \(G\) spielen neben der Konstruktionszeit der Datenstruktur und der Anfragezeit auf die Datenstruktur eine große Rolle bei der Auswahl einer geeigneten Datenstruktur.
+\\
+Auf Grundlagen dieses Graphens \(G\) kann schließlich eine Datenstruktur gefunden werden.
+Dabei ist zu beachten, dass die Eigenschaft bezüglich der Zyklen bereits die Auswahl einschränkt.
+Baumartige Datenstrukturen können nicht verwendet werden, da sie per Definition stets azyklisch sind.
+%\textcolor{red}{Quelle}.
+\\
+Zwei mögliche Methoden zur Speicherung eines Graphens mit diesen Eigenschaften sind die \textit{Adjazenzliste} und die \textit{Adjazenzmatrix}.
+Bei der Adjazenzliste wird ein ungerichteter Graphen \(G=\left(V,E\right)\) durch ein Array mit \(\left|V\right|\) Listen dargestellt.
+In den Listen werden für jeden Knoten \(v \in V\) all seine Nachbarn \(v'\) mit \(\left\lbrace v'\in V: \left(v, v'\right)\in E\right\rbrace\) gespeichert.
+In einem gerichteten Graphen wird die Adjazenzliste so angepasst, dass anstelle der Nachbarn die Nachfolger in diesen Listen enthalten sind~\citep{cormen2009introduction}.
+Sind die Kanten \(\left(v, v'\right)\in E\) zusätzlich gewichtet, so können diese Gewichtungen zu den entsprechenden Nachbarn respektive Nachfolgern \(v'\) in der Listen geschrieben werden.
+\\
+Eine alternative Darstellung eines Graphens \(G=\left(V,E\right)\) zur Adjazenzliste ist die Adjazenzmatrix.
+Die Knoten \(v \in V\) des Graphens \(G\) bilden eine zweidimensionale Matrix \(A=(a_{i,j})\) mit \(\left|V\right|\times\left|V\right| = \left|V^2\right|\) Elementen.
+Jedes Element \(a_{i,j} \in A\) in der \(i\)-ten Zeile und \(j\)-ten Spalte repräsentiert die Kante von Knoten \(i\) nach Knoten \(j\) mit \[a_{i,j}=\begin{cases}1, &\text{wenn} \left(i,j\right) \in E,\\0 &\text{sonst.}\end{cases}\]
+Sind die Kanten der Graphens gewichtet, können die Gewichtungen auch anstelle der Wertigkeit \(1\) in die Elemente \(a_{i,j}\) der Adjazenzmatrix eingetragen werden~\citep{cormen2009introduction}.
+Diese beiden Datenstrukturen sind für die Testszenarien hinreichend.
+\\
+Die allgemeine Auswahl von Datenstrukturen beruht auf der Grundlage des benötigten Speicherplatzes und der Zugriffszeiten auf diese Datenstrukturen.
+Diese Entscheidung zwischen der Adjazenzliste und Adjazenzmatrix als geeignete Datenstruktur zur Darstellung der Netzwerktopologie wird schließlich durch Anzahl der vorhandenen Kanten bestimmt.
+Ist der Graph \(G=\left(V,E\right)\) dünn mit Kanten \(e \in E\) besetzt, ist die Adjazenzliste vorzuziehen.
+Bei Annäherung von \(\left|E\right|\) an \(\left|V^2\right|\) sollte die Adjazenzmatrix gewählt werden~\citep{cormen2009introduction}.
+Denn für das zu betrachtende \gls{Mesh}-Netzwerk gilt \(\left|E\right| \ll \left|V^2\right|\), sodass die Adjazenzliste effizienter ist (vgl.~Kapitel~\ref{sec:messergebnisse_und_auswertung}).
+Durch diese geringe Dichte \(d = \left|E\right| \big/ \left|V^2\right|\) hat die Adjazenzliste einen Vorteil.
+Sie benötigt genau so viel Speicherplatz, wie Knoten und Kanten vorhanden sind.
+Mathematisch liegt der Speicherplatzbedarf der Adjazenzliste in der Klasse \(\Theta{\left(\left|V\right|+\left|E\right|\right)}\).
+%\textcolor{red}{nachfragen ob so richtig geschrieben} 
+Demgegenüber wird bei der Adjazenzmatrix unabhängig von der Anzahl der Kanten stets ein Speicherplatzbedarf in der Klasse \(\Theta{\left(\left|V^2\right|\right)}\) benötigt.
+\\
+Weiterhin ist zu überprüfen, wann die Zugriffe auf die Datenstruktur erfolgen.
+Bei der Ausführung des Service~Managers, wie in Kapitel~\ref{cha:service_manager} beschrieben, wird zu Beginn einmalig auf den einzelnen \gls{MIOT}-Nodes eine statische Kostenmatrix mit der vollständigen Routing-Gewichtung von der jeweilgen Node zu allen anderen Nodes aus der Datenstruktur erstellt (vgl.~Kapitel~\ref{sub:entwurfsmuster_und_architektur_network_router}).
+Da für das Auffinden von geeigneten Routen in der Datenstruktur alle Nachfolger des gerichteten Graphens betrachtet werden müssen, liegt hier ebenfalls der entscheidende Vorteil bei der Adjazenzliste gegenüber der Adjazenzmatrix.
+Die Adjazenzliste liefert für einen Knoten  \(v\) direkt alle Nachfolger \(v'\) mit \(M_{v'}=\left\lbrace v'\in V: \left(v, v'\right)\in E\right\rbrace\) in der Laufzeitklasse \(\Theta{\left(\left|M_{v'}\right|\right)}\).
+Bei einer geringen Dichte \(d\) gilt für den Graph \(G\) hier \(\left|M_{v'}\right| < \left|V\right|\).
+%ohne weitere Kanten \(\left(v, v''\right) \in E\) betrachten zu müssen.
+%Dies ist auch für die Erstellung des \gls{SDN} in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} von Vorteil.
+Bei der Adjazenzmatrix muss hingegen immer eine vollständige Reihe mit \(\left|V\right|\) Elementen in der Laufzeitklasse \(\Theta{\left(\left|V\right|\right)}\) durchsucht werden, um die Liste der Nachfolger zu finden.
+Der Vorteil der Adjazenzmatrix, ein schneller Zugriff auf einzelne Elemente in der Laufzeitklasse \(\bigO{\left(1\right)}\), ist in den zu betrachtenden Untersuchungen nicht vorhanden.
+Da die Einfügung von Knoten und Kanten nur während des initialen Aufbaus geschieht sowie das Löschen von Knoten und Kanten nicht benötigt wird, werden Überlegungen zu diesen Auswahlkriterien außer Acht gelassen.
+Nach erfolgreicher Erstellung der Datenstruktur wird diese als statisch betrachtet.
+Aus den dargelegten Gründen fällt die Wahl eindeutig auf die Adjazenzliste als Datenstruktur zur Speicherung der Netzwerktopologie.
+Innerhalb der Elemente in den Listen werden die Leistungsmetriken \gls{Durchsatz} und \gls{ETX} sowie die verwendete Netzwerkkarte eingetragen.
+
+%Transformation
+%hier evaluation skript 2 beschreiben
+
+\section{Auswertung und Messergebnisse}
+\label{sec:messergebnisse_und_auswertung}
+Bei den Messaufnahmen der Leistungsmetriken \gls{ETX} und \gls{Durchsatz} sind von den insgesamt \(\left|V_{\text{max}}\right|\)~=~60 vorhandenen \gls{MIOT}-Nodes nur eine Teilmenge von \(\left|V\right|\)~=~41 Nodes verfügbar.
+Dies hat zum einen eine direkte Auswirkung auf die Gesamtanzahl der Verbindungen zwischen den Nodes im \gls{MIOT}-Testbed.
+Zum anderen können die Knoten beim Routing in den weiterführenden Untersuchungen in Kapitel~\ref{cha:evaluation} nicht beachtet werden.
+In einem voll vermaschten Netzwerk, in dem sich alle Nodes über die drei Teilnetzwerke untereinander erreichen können, wären mit \(\left| V \right|\) als Menge der verfügbaren Nodes genau \(\left|E_{\text{max}}\right|~=~3 \times \left| V \right|^2~=~3 \times 41^2 = 5.043\) Verbindungen insgesamt möglich.
+Im Folgenden werden zunächst die Auswertungen der einzelnen Messungen dargestellt und daraufhin eine Kombination der beiden Messungen durchgeführt.
+Die gesamte Evaluation erfolgt mithilfe des Python-Skripts \inlinecode{topology_evaluation.py}.
+In einem weiteren Schritt werden nur die besten Mehrfachkanten in die in Kapitel~\ref{sec:datenstruktur_der_topologischen_charakteristika} beschrieben Adjazenzliste eingefügt, da das in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} beschriebene \gls{SDN} nur diese zur Simulation des \gls{MIOT}-Testbeds benötigt.
+\\
+Die Aufnahme der \gls{ETX} erzeugt über die drei voneinander getrennten Netzwerke hinweg die in der Tabelle~\ref{tab:vergleich_ptx_gesamt} angegebenen Messwerte.
+Hier ist die erwartete Übertragungswahrscheinlichkeit \(P(\text{TX}) = ETX^{-1}\) interessant, die sowohl über das kombinierte Netzwerk als auch über die einzelnen Netzwerke betrachtet werden kann.
+In dieser Messung sind auch die durch die drei Netzwerkkarten entstehenden Mehrfachkanten zwischen den Nodes im \gls{MIOT}-Testbed enthalten.
+\begin{table}[H]
+	\centering
+	\begin{tabular}{c|c|c|c}
+		\toprule
+		Netzwerk & Verbindungsanzahl & \(M_{P(\text{TX})}\) & \(SD_{P(\text{TX})}\) \\
+		\midrule
+		Gesamt     & 2.071 & 50,726\% & 34,375\% \\
+		Netzwerk 1 &  496 & 57,907\% & 28,540\% \\
+		Netzwerk 2 &  739 & 50,601\% & 35,804\% \\
+		Netzwerk 3 &  836 & 46,573\% & 35,563\% \\
+		\bottomrule
+	\end{tabular}
+	\caption[Vergleich der Knotenanzahl und erwarteten Übertragungswahrscheinlichkeit des aufgenommenen MIOT-Testbeds anhand der ETX-Messung]{Vergleich der Knotenanzahl und erwarteten Übertragungswahrscheinlichkeit des aufgenommenen \gls{MIOT}-Testbeds anhand der \gls{ETX}-Messung. Das Netzwerk ist dabei in drei Subnetzwerk aufgeteilt, die durch die drei Netzwerkkarten bereitgestellt werden.}
+	\label{tab:vergleich_ptx_gesamt}
+\end{table}
+Würde eine Minimierung des Netzwerkes auf Basis von \gls{ETX} durchgeführt werden, sodass immer die Beste der maximal drei vorhandenen Mehrfachkanten einer Verbindung zwischen zwei Nodes verwendet wird und dennoch alle Nodes untereinander erreichbar sind, reduziert sich die Anzahl der Verbindungen in dem kombinierten Netzwerk auf \(\left|E\right|\)~=~1.043 (aufgeteilt: Netzwerk~1~=~167, Netzwerk~2~=~390, Netzwerk~3~=~486).
+Für das gesamte Netzwerk würde dies eine Veränderung der kombinierten \(P(\text{TX})\) auf \(M_{P(\text{TX})}\)~=~51,746\%, \(SD_{P(\text{TX})}\)~=~35,344\% bedeuten.
+\\
+Das \gls{MIOT}-Testbed soll allerdings so aufgenommen werden, dass bei allen betrachteten Kanten sowohl die Werte für \gls{ETX} als auch des \glsmgen{Durchsatz} vorhanden sind, denn nur so kann ein Netzwerk vollständig beschrieben werden.
+Bei der im Vergleich zur \gls{ETX}-Messung kurzzeitigen Messung des \glsmgen{Durchsatz} konnten nicht alle Verbindungen wiederhergestellt werden.
+Die Messung des \glsmgen{Durchsatz} enthalten bei einigen Knotenpaare nicht alle Mehrfachkanten, obwohl die Messung der \gls{ETX} dort möglich war.
+Daher werden im nächsten Schritt zunächst die Ergebnisse der \gls{Durchsatz}-Messung dargestellt.
+Die Tabelle~\ref{tab:vergleich_durchsatz_gesamt} zeigt die in der Messung aufgefundene Kantenanzahl zwischen den selben 41 \gls{MIOT}-Nodes wie aus der \gls{ETX}-Messung.
+Weiterhin wird der durchschnittliche \gls{Durchsatz} der Verbindungen in der Einheit Mbit/s dargestellt.
+\begin{table}[H]
+	\centering
+	\begin{tabular}{c|c|c|c}
+		\toprule
+		Netzwerk & Verbindungsanzahl & \(M_{\text{Durchsatz}}\) (in Mbit/s) & \(SD_{\text{Durchsatz}}\) (in Mbit/s) \\
+		\midrule
+		Gesamt     & 1.296 & 2,769 & 1,211 \\
+		Netzwerk 1 &  290 & 2,303 & 1,437 \\
+		Netzwerk 2 &  476 & 2,991 & 1,121 \\
+		Netzwerk 3 &  530 & 2,826 & 1,088 \\
+		\bottomrule
+	\end{tabular}
+	\caption[Vergleich der Knotenanzahl und des Durchsatzes des aufgenommenen MIOT-Testbeds anhand der Durchsatz-Messung]{Vergleich der Knotenanzahl und des Durchsatzes des aufgenommenen \gls{MIOT}-Testbeds anhand der \gls{Durchsatz}-Messung. Das Netzwerk ist dabei in drei Subnetzwerk aufgeteilt, die durch die drei Netzwerkkarten bereitgestellt werden.}
+	\label{tab:vergleich_durchsatz_gesamt}
+\end{table}
+Darauf folgt eine Zusammenführung der Messergebnisse aus den beiden \gls{ETX}- und \gls{Durchsatz}-Messungen durch Bildung der Schnittmenge beider gemessener Graphen.
+Dabei werden zunächst alle Werte der \gls{Durchsatz}-Messung in den Graphen der \gls{ETX}-Messung eingearbeitet und schließlich alle Kanten aus den Graphen gestrichen, die nicht beide Messwerte enthalten.
+Mehrfachkanten sind in diesem Graphen jedoch noch existent.
+Die Messergebnisse der neuen Schnittmenge sind in der folgenden Tabelle~\ref{tab:vergleich_etx_durchsatz_gesamt} dargestellt.
+\begin{table}[H]
+	\centering
+	\begin{tabular}{c|c|c|c|c|c}
+		\toprule
+			\multirow{2}{*}{Netzwerk} &
+			\multirow{2}{*}{Verbindungsanzahl} &
+			\multirow{2}{*}{\(M_{P(\text{TX})}\)} &
+			\multirow{2}{*}{\(SD_{P(\text{TX})}\)} &
+			\(M_{\text{Durchsatz}}\)&
+			\(SD_{\text{Durchsatz}}\)\\
+			&&&&(in Mbit/s) & (in Mbit/s)\\
+		\midrule
+		Gesamt     & 1.167 & 62,352\% & 31,562\% & 2,873 & 1,178 \\
+		Netzwerk 1 &  271 & 67,105\% & 21,240\% & 2,387 & 1,413 \\
+		Netzwerk 2 &  400 & 65,337\% & 32,621\% & 3,148 & 1,060 \\
+		Netzwerk 3 &  496 & 57,379\% & 34,597\% & 2,917 & 1,041 \\
+		\bottomrule
+	\end{tabular}
+	\caption[Vergleich der Knotenanzahl, erwarteten Übertragungswahrscheinlichkeit und des Durchsatzes des aufgenommenen MIOT-Testbeds anhand der Schnittmenge der ETX- und Durchsatz-Messung]{Vergleich der Knotenanzahl, erwarteten Übertragungswahrscheinlichkeit und des Durchsatzes des aufgenommenen \gls{MIOT}-Testbeds anhand der Schnittmenge der \gls{ETX}- und Durchsatz-Messung. Das Netzwerk ist dabei in drei Subnetzwerk aufgeteilt, die durch die drei Netzwerkkarten bereitgestellt werden. Verbindungen, die nicht beide Leistungsmetriken aufwiesen, wurden aus dem unterliegenden Graphen entfernt.}
+	\label{tab:vergleich_etx_durchsatz_gesamt}
+\end{table}
+Interessant ist mit diesen Ergebnissen ein Vergleich zwischen \gls{ETX} und den \gls{Durchsatz} innerhalb der Zusammenführung.
+Abbildung~\ref{fig:etx_throughput_comparison} zeigt diesen Vergleich aufgeteilt auf die drei noch nicht weiter minimierten Netzwerke.
+Während in den Netzwerken~2~und~3 die Werte deutliche über die gesamte Breite der erwarteten Übertragungswahrscheinlichkeit streuen, konzentrieren sich die Verbindungen in Netzwerk~1 größtenteils bei einer erwarteten Übertragungswahrscheinlichkeit zwischen 60\% und 80\%.
+Vergleichsweise viele Verbindungen der Netzwerke~2~und~3 sind zusätzlich im Bereich von über 90\% zu finden.
+Darüber hinaus zeigt sich ein erhöhter Gesamtdurchsatz bei den Netzwerken~2~und~3 im Vergleich zu Netzwerk~1.
+Während sich die Verbindungen von Netzwerk~1 hier gleichmäßig verteilen, ist der größte Anteil der Verbindungen in den Netzwerken~2~und~3 in der oberen Hälfte wiederzufinden.
+Das Minimum aller \gls{Durchsatz}-Messungen liegt bei \(0,0179\)~Mbit/s und das interessantere Maximum bei \(4,6\)~Mbit/s.
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/etx_throughput_comparison_iface_0.csv} {\datatableifacezero}
+	\pgfplotstableread [col sep=semicolon]{./tables/etx_throughput_comparison_iface_1.csv} {\datatableifaceone}
+	\pgfplotstableread [col sep=semicolon]{./tables/etx_throughput_comparison_iface_2.csv} {\datatableifacetwo}
+	
+	\begin{tikzpicture}
+	
+	\begin{axis} [
+	point cloud chart style,
+	y axis percentage style,
+	xtick={0.5,1,...,4.5},
+	xmax=4.5,
+	ylabel={Erwartete Übertragungswahrscheinlichkeit in Prozent},
+	xlabel={Durchsatz in Mbit/s}]
+	
+	\addplot [style={bblue},  only marks, mark=+] table[x=throughput, y=etx, col sep=semicolon] {\datatableifacezero};
+	\addplot [style={rred},   only marks, mark=+] table[x=throughput, y=etx, col sep=semicolon] {\datatableifaceone};
+	\addplot [style={ggreen}, only marks, mark=+] table[x=throughput, y=etx, col sep=semicolon] {\datatableifacetwo};
+	
+	\legend{Netzwerk 1,Netzwerk 2, Netzwerk 3}
+	\end{axis};
+	\end{tikzpicture}
+	\caption[Gegenüberstellung der erwarteten Übertragungswahrscheinlichkeit und des Durchsatzes]{Gegenüberstellung der erwarteten Übertragungswahrscheinlichkeit und des \glsmgen{Durchsatz}, aufgeteilt auf die drei separaten, kabellosen Netzwerke des \gls{MIOT}-Testbeds. Die erwartete Übertragungswahrscheinlichkeit wurde dabei mit der Formel \(P=\text{ETX}^{-1} * 100\) berechnet.}
+	\label{fig:etx_throughput_comparison}
+\end{figure}
+Abschließend erfolgt durch Reduktion der Mehrfachkanten die Erstellung eines finalen Graphens, der für die Verwendung des \glsmgen{SDN} in einer Adjazenzliste abgespeichert wird.
+Die Mehrfachkanten geben einer Verbindung zwischen zwei \gls{MIOT}-Nodes zwar eine höhere Stabilität, da diese bei Verlust einer einzelnen Kante als Ausweichroute verwendet werden können, doch müssten diese auch beim Routing Beachtung finden.
+Vorausschauend ist dies bei dem \gls{SDN}-Controller in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} nicht der Fall, da der \gls{SDN}-Controller mittels \gls{Spanning Tree Protokoll} das Auffinden der kürzesten Pfade durchführt. Sind diese einmal gesetzt, werden sie immer weiter verwendet und der Ausfall einer Verbindung führt zum Verlust der gesamten Route.
+\\
+Die Reduktion der Mehrfachkanten wird anhand der \gls{ETX} entschieden.
+Je näher der Wert von \gls{ETX} dem Minimum 1 ist, desto besser ist die Verbindung.
+Zwar könnte die Reduktion auch anhand des \glsmgen{Durchsatz} geschehen, doch die Entscheidung fiel auf \gls{ETX} in Hinblick auf die Tatsache, dass eine gesicherte Übertragung ohne erneuten Versand wichtiger ist als die Maximierung des \glsmgen{Durchsatz}.
+Der finale Graph besteht schließlich aus \(\left|E\right|\)~=~634 Verbindungen (aufgeteilt: Netzwerk~1~=~85, Netzwerk~2~=~215, Netzwerk~3~=~334) zwischen den 41~Nodes.
+Für das gesamte Netzwerk bedeutet dies eine Veränderung der kombinierten \(P(\text{TX})\) auf \(M_{P(\text{TX})}\)~=~60,584\%, \(SD_{P(\text{TX})}\)~=~33,586\% und einen Durchsatz mit \(M_{\text{Durchsatz}}\)~=~2,827~Mbit/s, \(SD_{\text{Durchsatz}}\)~=~1,167~Mbit/s.
+\\
+Ein weiterer Aspekt ist die Konnektivität der \gls{MIOT}-Nodes, die in der Graphentheorie durch den Knotengrad \(d_G\) beschrieben wird.
+Der finale Graph mit 41~Knoten hat einen durchschnittlichen Knotengrad \(d_G(v \in V)\) von \(M_{d_G(v)}\)~=~15, \(SD_{d_G(v)}\)~=~6,083.
+Das Maximum liegt bei einem Knotengrad von \(d_G(v)\)~=~24 bei drei unterschiedlichen \gls{MIOT}-Nodes.
+Das Minimum mit \(d_G(v)\)~=~1 existiert bei einer \gls{MIOT}-Node.
+Die \gls{MIOT}-Nodes mit einem hohen Knotengrad könnten sich als sehr geeignet zur Ausführen eines Dienstes im \gls{IoT} herausstellen, da sich viele andere Nodes in der unmittelbaren Umgebung befinden und die Routen durch das Netzwerk gering sind.
+\\
+Schließlich zeigt sich auch hier entscheidende Vorteil der Adjazenzliste gegenüber der Adjazenzmatrix.
+Die Kantendichte \(d\) mit \(d = \left|E\right| \big/ \left|V^2\right|\) liegt bei diesem finalen Graphen, der keine Mehrfachkanten enthält, bei gerade einmal \(d = 634 \big/ \left|41^2\right| = 37,72\%\) (vgl.~Kapitel~\ref{sec:datenstruktur_der_topologischen_charakteristika}).

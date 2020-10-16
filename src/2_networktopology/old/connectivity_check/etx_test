@@ -1,0 +1,22 @@
+#!/bin/bash
+nummer=$(hostname | egrep -o [1-9]+[0-9]*)
+
+for i in `seq 0 2`;
+do
+
+ifconfig wlan$i down
+sleep 1
+iwconfig wlan$i mode ad-hoc
+iwconfig wlan$i essid comsys-$i
+chan=$(( $i * 3 + 1 ))
+iwconfig wlan$i channel $chan
+iwconfig wlan$i ap 16:EB:FF:18:C8:F$i
+ifconfig wlan$i 10.0.$i.$nummer netmask 255.255.255.0
+iwconfig wlan$i rate 6M
+ifconfig wlan$i up
+
+done
+
+echo 1 > /proc/sys/net/ipv4/conf/wlan0/arp_ignore
+
+#python /usr/sbin/etxd.py -f -D -i3 -w30 wlan0 wlan1 wlan2 &

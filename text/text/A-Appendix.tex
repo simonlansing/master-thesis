@@ -1,0 +1,115 @@
+%!TEX root = ../main.tex
+\section{Der Service Manager als dienstorientierte Plattform}
+\subsection{Sequenzdiagramm zur Migration im Service Transporter}
+\begin{figure}[!htb]
+	\centering	
+	\includegraphics[width=0.7\textwidth]{graphics/sequence_diagram_service_transporter_full.pdf}
+	\caption[Sequenzdiagramm zur Migration im Service Transporter]{Sequenzdiagramm zur Migration im Service Transporter}
+	\label{fig:sequenzdiagramm_komplett_service_transporter}
+\end{figure}
+\newpage
+\section{Die Evaluation der Dienstemigration im Internet der Dinge}
+\subsection{Vollständiger Graph des MIOT-Testbeds zur Emulation eines IoTs}
+\begin{figure}[!h]
+	\centering	
+	\includegraphics[width=\textwidth, trim=1.3cm 1.3cm 1.3cm 1.3cm, clip]{graphics/full_graph_circo.pdf}
+	\caption[Vollständiger Graph des MIOT-Testbeds zur Emulation eines IoTs]{Vollständiger Graph des MIOT-Testbeds zur Emulation eines IoTs}
+	\label{fig:vollstaendiger_graph_miot_emulation_iot}
+\end{figure}
+\newpage
+\subsection{Beschnittener Graph des MIOT-Testbeds zur Emulation eines segmentierten IoTs}
+\begin{figure}[!h]
+	\centering	
+	\includegraphics[width=\textwidth, trim=1.3cm 1.3cm 1.3cm 1.3cm, clip]{graphics/seperated_graph_circo.pdf}
+	\caption[Beschnittener Graph des MIOT-Testbeds zur Emulation eines segmentierten IoTs]{Beschnittener Graph des MIOT-Testbeds zur Emulation eines segmentierten IoTs}
+	\label{fig:beschnittener_graph_miot_emulation_segmentiertes_iot}
+\end{figure}
+\clearpage
+
+\section{Inhalt der CD}
+\label{appendix:cd}
+\resizebox{0.9\textwidth}{!}{
+	\begin{forest}
+		pic dir tree,
+		where level=0{}{% folder icons by default; override using file for file icons
+			directory,
+		},
+		where n children=0{%
+			if level=1{}{%
+				before drawing tree={y+=4mm}
+			}
+		}{%
+		}
+		[CD
+		[Bin]
+		[Paper
+		[\textcolor{gray}{\textit{beinhaltet alle im Text referenzierten Veröffentlichungen}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		]
+		[Presentation
+		[\textcolor{gray}{\textit{beinhaltet die Abschlusspräsentation des Kolloquiums}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		[presentation.pdf, file]
+		[presentation.tex, file]
+		]
+		[Results
+		[\textcolor{gray}{\textit{beinhaltet die Ergebnisse der Messungen aus Kapitel 3 und 5}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		[final\_test]
+		[reachability\_test]
+		[throughput\_test]
+		]
+		[Src
+		[1\_servicemananger
+		[\textcolor{gray}{\textit{Quellcode der gesamten Service Mananger Plattform}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		[server]
+		[test]
+		[logging.conf, file]
+		]
+		[2\_networktopology
+		[\textcolor{gray}{\textit{Quellcode der in Kapitel 3 durchgeführten Messungen und Auswertungen}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		[reachability\_test.py, file]
+		[topology\_evaluation.py, file]
+		]
+		[3\_performance
+		[\textcolor{gray}{\textit{Quellcode des in Kapitel 5 verwendeten Dienstes und Clients}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		[performance\_client.py, file]
+		[performance\_service.py, file]
+		]
+		[4\_mininet
+		[\textcolor{gray}{\textit{Quellcode des in Kapitel 5 erstellten Mininet Netzwerkes}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		[mesh\_topo.py, file]
+		]
+		]
+		[Text
+		[\textcolor{gray}{\textit{beinhaltet diesen Text der Masterarbeit}},
+		desc, no edge,
+		before drawing tree={x-=4mm,y-=2mm}]
+		[Masterarbeit.pdf, file]
+		[main.tex, file]
+		]
+		]
+	\end{forest}
+}
+%\section{Dynamische Erkennung der Netzwerktopologie}
+%\subsection{service.py}
+%\subsection{ping\textunderscore result\textunderscore  joiner.py}
+%\subsection{evaluation.py}
+
+%\section{Ausführung und Migration von Diensten}
+%\subsection{background\textunderscore handler.py}
+%\subsection{service\textunderscore handler.py}
+%\subsection{service\textunderscore transporter.py}
+%\newpage
+%\section{Evaluation}

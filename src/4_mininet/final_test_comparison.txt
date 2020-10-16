@@ -1,0 +1,170 @@
+IOT Netzwerk A
+"Internet" simuliert mit Ethernet? oder Gar nicht und nur über ein Punkt?
+IOT Netzwerk B
+
+Messungen: RTT von Nachrichten
+Darf die Zeit verwendet werden zum Übertragen der variablen Kilobyte-Dateien?
+-> sonst wie RTT messen?
+Berechnung: Hop Count
+-> Durchschnittswerte sollten bei allen Vergleichen außer im eigenem Netz höher sein
+------
+Zusatz:
+Requests count
+Request Distance = Hop Count
+Network Size [Nodes count]
+Service Demand [requests/s]
+Service Goodput [kB/s]
+Network Load [kB/s]?
+
+
+Vergleiche:
+Immer aus Sicht von IoT Netzwerk A, Service platzieren:
+Im eigenen Netz wandern lassen
+Zentral im eigenen Netzwerk
+Am eigenen Gateway setzen
+Im Internet fest setzen <> Am fremden Gateway setzen
+
+
+-> Angabe von Knoten, die für Migration genutzt werden dürfen, relevant
+
+
+----------------------------------------------
+Spätere Auswertung
+----------------------------------------------
+4 Experimente -> Übertragungsrate zwischen Nachrichten verringern, sieht man, dass es hoch geht?
+Bricht das Netz zusammen, wenn es über ein einzelnes Gateway geht?
+
+
+Request Distance [hops] vs Round-trip time
+
+
+y achse vs x achse:
+Request Distance [hops] vs. Service Demand [requests/s]
+
+XXXXXX   Round-trip time [ms] vs. Service Demand [requests/s]
+XXXXXX   Service-Recall (Reconnects bei Connection + gesamte Verluste) vs. Service Demand [requests/s]
+XXXXXX   RTT/Hops vs Migrations/h (migrations/h)
+
+Service Goodput (berechnet) vs Service Demand [requests/s]
+
+Anzahl Migrationen bei Wanderung im eigenen Netz A vs Wanderung im anderen Netz B
+bei wenigen clients (random mehrere regions) vs viele clients vs wenn von anderes netz anfragen
+-> X-Achse: Demand Volatility [changes/hour] / Y-Achse: Request Distance [hops]
+-> oder: Interpretierbar durch Request Distance [hops] (x achse) vs Requests Count (in thousands) -> in 5 grafiken
+
+
+
+XXXXXXX   X-Achse: Request Distance [hops] vs Y-Achse: Anteil Nodes von Gesamtmenge [in %] -> 5 Grafiken
+
+------------------------------------------------------------------------------------------------------------
+Auf ein einzelnes AdHoc Netzwerk mit allen Knoten und wanderndem Service (Single Instance) wird verglichen:
+Requests pro Minute angeben
+Wartezeit Mittelwert berechnung w = (60 / (requests/min))
+Warzeit Random  rand(0.5 * w, 1.5 * w) -> Spitzenausgleich
+
+- Round-trip Time [ms]  vs. Service Demand [requests/min]
+    Geht die durchschnittliche RTT hoch, wenn mehr Anfragen gestellt werden
+
+    Migration Time: 30s
+    Vergleiche Szenarien Requests pro Minute: 30,60,120,180,240,300/15,30,60,90,120,150
+    Dabei festgelegt: Paketgröße festgelegt auf 1kB / 1460B
+    10 Clients (40%4) vergleichen
+
+
+
+- Round-trip Time [ms]  vs. Migration Time [sec]
+    Geht die durchschnittliche RTT dadurch runter, dass öfters ein Migrationcheck statt findet?
+
+- Verhältnis Anzahl Migrationen / Mögliche Migrationen [%]  vs.  Migration Time [sec]
+    Wird öfters migriert, weil das Netzwerk nicht mehr ausgeglichen Nachrichten sendet und dadurch schwankt?
+
+
+    Vergleiche Szenarien Migration Time: 10,30,60,180,300 ...
+    Requests pro Minute festgelegt: 10/Minute
+    Dabei festgelegt: Paketgröße festgelegt auf 1kB / 1460B
+
+
+
+        sleeping_time_median = 60 / self.current_performance_set['requests_p_minute'] 
+        -> sleeping_time_median = 45 / self.current_performance_set['requests_p_minute'] 
+        -> 15 sek pro Minute können als Schlafzeit verwendet werden
+
+        15/60stel Schlafzeit möglich
+        -> 1/4 Sekunde pro Nachricht auf das Pausenkonto gutschreiben
+        -> Mit einer << (geringen) Wahrscheinlichkeit mit X Prozent soll 
+        das Pausenkonto vollständig als Wartezeit aufgebraucht werden
+            -> Das muss vor der rekursiven Schleife abgewartet werden.
+            X: < 1/rep_per_min
+            -> wenn rep_per_min == migration time
+            -> wahrscheinlichkeit von =1x pro migration zyklus warten
+
+    -> mit migrationstest anfangen und gucken, ob er wirklich wechselt
+        mit X und der 40 rumspielen und testen
+
+
+ ------------------------------  
+ damit alle clients zwar im schnitt 60 nachrichten pro minute senden, aber nicht in einer konstanten rate von 1 nachricht pro sekunde, sondern dass die 60 nachrichten schon nach theoretischen 45 sekunden gesendet werden...bei jeder nachricht werden somit 1/4 sekunde weniger gewartet... im schnitt bekomme ich dann 15sek pro minute auf ein zeitkonto gutgeschrieben, welches ich dann mit einer wahrscheinlichkeit von 1/(2*60)=1/120 aufbrauche :D
+wenn das alle clients dann irgendwann benutzen, fängt das system an, instabil  zu werden :D
+...jetzt nur noch mit 10 clients statt 40, damit die instabilität auch bemerkbar ist :D
+
+um hoffentlich mehr streuung beim senden von nachrichten zu generieren, mache ich folgende berechnung:
+
+Eigentlich möchte ich z.B. rep_per_min = 90 Nachrichten/Minute senden
+-> Bevor ich rekursiv eine Nachricht sende, warte ich also, dadurch generiere ich ja nen gleichmäßigen Takt
+sleep_time = timeslot / rep_per_min = 1min/90 = 60sek/90 = 2/3s
+Damit der Takt sich stabilisiert, erzeuge ich eine Random Zahl zwischen 0,5 * sleep_time und 1,5* sleep_time
+(kein Scherz, das funktioniert perfekt :D)
+-> Das führt aber dazu, dass nach einer Migration das System stabil ist
+
+Einbauen von Streuung:
+Ich sende nicht binnen timeslot = 1min, sondern nehme an, mein Sendeintervall ist geringer,
+z.B. timeslot = 45s
+-> sleep_time = timeslot / rep_per_min = 45s/90 = 1/2s
+
+Pro Minute bleiben mir also 60s - 45s über, die ich zwischendurch warten muss, weil ich ja
+"schneller als binnen 60s alle Nachrichten gesendet habe"
+Ich errichte also ein Pausenkonto, füge dem pro bisher gesendete Nachricht ein Häppchen Intervall hinzu:
+pause_account = Σ(Δsleep_time_60 - sleep_time_new)
+-> pro Nachricht also
+add_to_pause_account = 2/3s - 1/2s = 1/6s
+
+Das bisherige Pausenkonto brauche ich mit einer Wahrscheinlichkeit
+τ = 1/2*x auf mit x <= rep_per_min
+
+ ------------------------------   
+
+
+- Round-trip Time [ms] vs. Paketgröße
+    
+    Festgelegt: Gesamtgröße über Testszenario: 100 MB/h
+    Migration Time: 30s
+    Vergleiche Paketgröße: 1kB / 10kByte / 100kByte / 1MB / 10MB
+    -> Requests pro Minute 1706 R/min _ 170 R/min _ 17 R/min _ 1.7 R/min _ 0.17 R/min
+    
+    
+
+
+Dann wird das Netzwerk in 2 IoT Netzwerke A und B mit einem "Internet" (50Mbit/s bzw 10Mbit/s (Statistik zum Upload in Deutschland?) zwischen den "Internet" Nodes nutzen). Dabei die Szenarien immer aus der Sicht von IoT Netzwerk A mit einer 1 zu 1  Verteilung von Clients in den jeweiligen Netzwerken A und B:
+1. Service im eigenen IoT Netzwerk A wandern lassen
+        Dieses Szenario legt nahe, dass für die Nodes aus dem IoT B eine Duplikation durchgeführt werden könnte. Die duplizierte Service Instanz sollte im IoT B wandern lassen. Anstatt dieser Duplikation könnte auch eine Service INstanz im Internet festgesetzt werden (vgl. Szenario 4)
+2. Service manuell und zentral im eigenen IoT Netzwerk A
+3. Service am eigenen Gateway
+4. Service im Internet festsetzen
+5. Service im fremden IoT Netzwerk B wandern lassen
+
+Zwischen diesen wird dann verglichen:
+- Round-trip Time [ms] / Client Nodes Count [%]
+
+    Migration Time: 30s
+    Requests pro Minute: 60
+    Paketgröße festgelegt auf 1kB / 1460B
+
+
+
+TEXT IDEAS:
+-------------------------
+-> sind mehrere instanzen vorhanden, sollte anahand der topologie immer geringere dinstanz gewählt werden
+-> der network sniffer arbeitet auf basis offnerer ports des services
+    -> fallen große service sync aufgaben an, werden diese mit in die berechnung einfließen
+    -> kann gewollt sein, oder auch nicht. man müsste das sniffing so bauen, dass nur clients beachtet werden
+    -> ABER: wenn 2 IoTs die Service Instanzen wandern -> Ein hoher Synchronisierungstraffic zwischen den Instanzen wird dann dazu führen, dass sich die Service Instanzen an die Gateways anheften, was nicht schlecht ist. dadurch werden die clients und die syncrhonisierung gleichmäßig bedient

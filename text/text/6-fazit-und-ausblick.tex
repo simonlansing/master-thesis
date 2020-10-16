@@ -1,0 +1,104 @@
+%!TEX root = ../main.tex
+\chapter{Fazit und Ausblick}
+\label{sec:fazit_und_ausblick}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Zuvor aufgestellte Fragen / Thesen:
+%%%%%%%%%Da die Bereitstellung dieser Dienste auf eine Vielzahl von Geräten stattfinden kann, gilt es zu klären wo die besten Resultate im Bezug auf die Latenzzeiten und weiteren Leistungsmetriken zwischen den Objekten im \gls{IoT} und den Diensten geliefert werden.
+
+%%%%%%%%%Dies bringt jedoch einige Risiken mit sich, denn in den segmentierten Mikro-Fogs des \glsmgen{IoT} müsste ein selbstorganisierender Mechanismus einen Dienst anhand bewertbarer Systemeigenschaften strategisch optimal positionieren.
+
+%%%%%%%%%%Diese bewertbare Systemeigenschaften und passende Aufnahmemöglichkeiten sind Teil einer weiteren Untersuchung, die schließlich die wichtigen Daten für eine Plattform liefern, die den selbstorganisierenden Mechanismus implementiert.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Was wurde gemacht, Kapitel durchgehen
+%Thesen nochmal aufstellen
+Die vorangegangenen Kapitel demonstrieren die Möglichkeiten der Bereitstellung von Diensten im \gls{IoT} für das \gls{Fog Computing} und einhergehend die Beantwortung der zu Beginn aufgestellten Fragen.
+%
+Zunächst konnten anhand bereits existierender Dienste für das \gls{IoT} festgestellt werden, dass viele abweichende Interpretationen für den Begriff \glqq Dienst\grqq{} im \gls{IoT} von verschiedenen Autoren aufgrund unterschiedlicher Betrachtungsweisen existieren.
+Diese ließen sich jedoch schließlich anhand verschiedener Merkmale in vier aufeinander aufbauende Klassen unterteilen, die sowohl eine gesonderte Betrachtung von Diensten mit physikalischen Ressourcen als auch mit einer reinen softwareseitigen Logik erlauben.
+Die darauf folgende Definition zur Autonomie der Dienste im \gls{IoT} ist für die Positionierung der Dienste von Interesse.
+Bei deren Untersuchungen konnte festgehalten werden, dass das globale \gls{IoT} derzeit eher in einzelne \gls{IoT}-Segmente aufgeteilt ist und innerhalb dessen unterschiedliche Positionen im \gls{IoT} zur Bereitstellung der Dienste vorhanden sind.
+Hierzu wurde überprüft, welche bekannten topologischen Verfahren aus der Erforschung von \glsmgenpl{Ad-hoc-Netzwerk} auch bei der Migration von Diensten im \gls{IoT} anwendbar sind.
+%
+Darauf folgte eine Betrachtung topologischer Charakteristika und passende Aufnahmemöglichkeiten, die als bewertbare Systemeigenschaften dazu verwendet werden konnten eine optimale Positionierung der Dienste im \gls{IoT} bei der Migration zu erlangen.
+%
+Die Grundlage, die eine Bereitstellung von Diensten im \gls{IoT} ermöglichte, bildete schließlich die vollständig konzipierte und implementierte dienstorientierte Service~Manager~Plattform, dessen komponentenbasierte Architektur eine Erweiterung um beliebige Komponenten erlaubt.
+Diese bilden gemeinsam einen selbstorganisierenden Mechanismus, der die topologischen Charakteristika lokal auf den Objekten aufnimmt, gewichtet und anhand von definierten Entscheidungskriterien den von ihr verwalteten Dienst im \gls{IoT} an strategisch optimale Positionen migriert.
+Die erfolgreiche Migration teilt der jeweilige Service~Manager den Objekten mithilfe einer Dienstsignalisierung mit.
+Die Verwaltung des Dienstes führt die Plattform so durch, dass dieser als ein vollständig autonomes Programm auf den Objekten arbeitet und keine spezifische \gls{API} der Plattform implementieren muss.
+%
+Da die abschließende Evaluation aufgrund von Umbaumaßnahmen in einem durch \gls{SDN} emulierten Netzwerk und nicht in einer realen \gls{IoT}-Umgebung stattfand, mussten zunächst topologische Charakteristika in dem \gls{MIOT}-Netzwerk der Westfälische Wilhelms-Universität Münster aufgenommen und in einer effizienten Datenstruktur bereitgestellt werden.
+Diese konnte schließlich bei der Emulation des virtuellen Netzwerkes durch den \gls{Virtual Network Emulator} Mininet und der Migration durch den Service~Manager verwendet werden.
+%
+%Generelle Evaluation und das daraus erkannte Ergebnis beschreiben
+Die Evaluation wurde schließlich mithilfe des gesamten Systems durchgeführt, das sich von einer Client-Anwendung über einen durch die Service~Manager Plattform bereitgestellten Dienst im \gls{IoT} bis hin zu den bewertbaren Systemeigenschaften als Vergleichsmerkmale erstreckt.
+In diesem Messaufbau sendete die Client-Anwendung gezielt Nachrichten an den im \gls{IoT} migrierenden Dienst und überprüfte die \gls{RTT}.
+Die Service~Manager~Plattform protokollierte die durchgeführten oder abgelehnten Migrationen und alle aufgetretenen Fehler.
+\\
+Insgesamt zeigen die Ergebnisse eine positiv zu verzeichnende Minimierung der Latenzzeiten respektive \gls{RTT} um den Faktor~20 im Median und um den Faktor~2 im Durchschnitt durch die Bereitstellung eines zwischen den Objekten im \gls{IoT} migrierenden Dienstes im Vergleich zu festgelegten Dienstpositionen, wie die Edge-Gateways des \glsmgen{IoT} oder ein Standort im Internet, beispielsweise einer \gls{Cloud}-Infrastruktur.
+%
+Negativ ist hingegen die verzeichnete Steigerung der Fehlversuche bei dem Aufbau von Verbindungen der Clients zum migrierenden Dienst zu bewerten, die auf fehlende Informationen der Dienstpositionen zurückzuführen sind.
+%
+Zusätzlich zu diesen Messergebnissen ist auch eine Abhängigkeit zwischen der festgelegten Migrationszeit durch die Plattform und der Anfrageverhalten der Clients festzustellen.
+Bei einer seltenen Verwendung des Dienstes durch die Objekte im \gls{IoT} muss eine Anpassung der Migrationszeit vorgenommen werden, die schließlich zu einer Reduktion der Anzahl Migrationen im \gls{IoT} führt.
+%
+Darüber hinaus ist den Ergebnissen zu entnehmen, dass die Migrationen nur für die lokale Verarbeitung innerhalb eines \gls{IoT}-Segments eine zeitliche Verbesserungen ergeben.
+Ist ein segmentiertes \gls{IoT} mit anfragenden Clients aus mehreren Segmenten vorhanden und wandert der Dienst in einem der beiden Segmente, so nähern sich die gemessenen Ergebnissen denen der Bereitstellung an den Edge-Gateways und im Internet an.
+Die Ergebnisse lassen sich plausibel nachvollziehen, da der Dienst für eine passende Bereitstellung beider \gls{IoT}-Segmente mittig zu den Edge-Gateways migriert wird.
+\\
+Auf dem Weg zu diesen Ergebnissen sind mehrere Probleme entstanden, die ihren Ursprung primär in den verlustbehafteten Verbindungen des Netzwerkes hatten.
+Aufgrund dieser verlustbehafteten Verbindungen des \glsmgen{IoT} erreichen die Signalisierungen einer stattgefundenen Migration eines Dienstes im \gls{IoT} nicht alle Clients.
+Die Lösung ist ein zustandsloses Protokoll zwischen den Clients und der Service~Manager Plattform, das eine Anfrage zum aktuellen Dienststandort erlaubt.
+Dieses Protokoll ist in Hinblick auf sehr große, dynamische \gls{IoT}-Netze ohnehin unabdingbar, da zu jedem Zeitpunkt neue Objekte dem \gls{IoT} hinzugefügt werden können.
+%
+Ein weiteres Problem entsteht bei die Migration im verlustbehafteten Netzwerk.
+Die Nachrichtenverluste sorgen sehr oft für Verbindungsabbrüche bei der Migration zwischen zwei Service~Managern, sodass schließlich der momentane Status während der Übertragung nicht erkannt wird.
+Abhilfe schafft hier ebenfalls ein Migrationsprotokoll, das diese Verbindungsabbrüche in jedem möglichen Zustand behandelt.
+%
+
+%Basierend auf den Ergebnissen dieser Masterarbeit kann festgestellt werden, dass die lokale Bereitstellung der Dienste direkt bei den Produzenten und Verbrauchern der Daten innerhalb der \gls{IoT}-Segmente
+Die Ergebnisse dieser Masterarbeit sind für das \gls{Fog Computing} mit dem globale Ziel der Laufzeitverbesserung von besonderem Interesse.
+So kann festgehalten werden, dass die Migration der Dienste in die unmittelbare Umgebung der Produzenten und Verbrauchern der Daten innerhalb der \gls{IoT}-Segmente bei der Erfüllung dieses Ziels deutliche Vorteile gegenüber der Bereitstellung von Diensten nur in der physischen Nähe der Objekte zeigen.
+Eines von vielen Anwendungsbereichen, die von dieser lokalen Bereitstellung profitieren, sind Verkehrsleitsystemen, bei denen Dienste beispielsweise innerhalb einzelner Ampelanlagen des globalen \glsmgen{IoT} zunächst lokale Aufgaben für die vernetzten Autos mit kurzen Latenzzeiten erledigen und die entstehenden Daten schließlich zur Auswertung an eine zentrale \gls{Cloud}-Infrastruktur der Verkehrsleitstelle leiten können.
+Bei der lokalen Bereitstellung der Dienste zeigt sich auch der weitere Vorteil, dass nicht immer eine dauerhafte Verbindung zum Internet gewährleistet sein muss.
+%
+%sind besonders für die verteilte Bereitstellung der Dienste pro \gls{IoT}-Segment wichtig.
+%So zeigt sich eine Verbesserung in der Latenzzeit, wenn ein Dienst innerhalb eines einzelnen \gls{IoT}-Segments migriert wird.
+%Dies zeigt schließlich die Bedeutung der Bereitstellung von Diensten in lokalen \gls{IoT}-Segmenten direkt bei den Produzenten und Verbrauchern der Daten.
+%globale ziel der laufzeitverbesserung
+%durch beitrag der arbeit konnte im iot dasztiel erfüllt werden
+%das wichtig für  beispielsweie bereich x oder weitere bereiche
+%
+%Dies lässt den Schluss zu, dass die Bereitstellungen der Dienste dezentral pro \gls{IoT}-Segment und, falls vom Dienst erwünscht, eine Aggregation der Daten schließlich zentral innerhalb einer \gls{Cloud}-Infrastruktur im globalen Internet erfolgen sollen.
+%Diese Aussage unterstützt auch die charakterisierenden Merkmale des \glsmgen{Fog Computing}, das Bindeglied zwischen den im \gls{IoT} vorhandenen Objekten und dem \gls{Cloud} Computing.
+%Für ein globales \gls{IoT} bedeutet es schließlich, das sich die Bildung von Mikro-Fogs für die einzelnen \gls{IoT}-Segmente anbietet, innerhalb denen eine eigenständige Bereitstellung eines autonomen Dienstes pro Mikro-Fog zu einer Steigerung der Leistungsmetriken führt.
+%
+%Die verteilte Bereitstellung eines autonomen Dienstes innerhalb der einzelnen Mikro-Fogs bietet sich auch im Allgemeinen an.
+%In den Messungen wurde bisher ein Durchsatz von 50 Mbit/s ohne Verluste für die Verbindungen zum Internet angenommenen.
+%Fällt diese Annahme weg, so könnte dies einhergehend mit der verteilte Bereitstellung deutliche Auswirkungen auf die Messungen haben.
+%Zum einen würden sich die anfragenden Objekte dann jeweils in den selben Mikro-Fogs wie die migrierenden Dienste befinden.
+%Zum anderen muss nicht immer eine dauerhafte Verbindung zum Internet gewährleistet sein.
+%Da mögliche Ausfälle oder Veränderungen im Durchsatz der Verbindung zum Internet in den Messungen nicht beachtet wurden, könnte die Folge dessen eine zusätzliche Steigerung der Leistungsmetriken sein.
+Aufgrund des positiven Einflusses sollten weitere Untersuchungen in diesem Bereich stattfinden.
+Ein erster Ansatz könnte dabei die Bereitstellung mehrerer gleicher, autonomer Dienste in den einzelnen \gls{IoT}-Segmenten sein, die kollaborativ über einer \gls{Cloud}-Infrastruktur zusammen arbeiten und so globale Funktionen den Clients im \gls{IoT} bereitstellen.
+Zu diesem Thema wäre auch eine standortverteilte Untersuchung auf Basis echter \gls{IoT}-Netzwerke und echter \gls{Cloud}-Infrastruktur anstelle eines virtuellen Netzwerkes von Interesse.
+%
+Da bisher die Entscheidungen der Service~Manager Plattform für die Migration eines Dienstes auf zuvor bekannten Informationen über die Routen des Netzwerkes basieren, sollte hier eine Implementierung in Richtung flüchtiger, lokaler Informationen eines einzelnen Objektes im \gls{IoT} erfolgen.
+Dadurch könnte nachgewiesen werden, dass die Bereitstellung von Diensten durch die Plattform auch in einer globalen Größe möglich wäre.
+Die verschiedenen topologischen Verfahren können dazu Anreize geben, wie eine Migration im \gls{IoT} durchgeführt werden kann.
+%
+Ein weitere Analyse sollte in die Richtung der Softwareverteilung und Autonomie von Dienste gehen.
+Eine automatisierte Softwareverteilung zur Einspeisung von Updates während des Betriebes könnte für eine dauerhafte Bereitstellung des Dienste ohne Ausfallzeiten und für eine aktuelle Software der Plattform und des Dienste zu jedem Zeitpunkt sorgen.
+Auch die Unterstützung Container-basierter Systeme wie LXC oder Docker~\citep{lxc, docker} wäre ein großer Gewinn für die Plattform, da sie eine Isolation und Autonomie von Anwendungen während der Ausführung erlauben.
+So wäre es bereits in naher Zukunft möglich allen Personen alle Objekte des Internets der Dinge zu jeder Zeit zur Verfügung zu stellen.
+%service mananger migration verbessern durch austausch des migrationsprotokolls mit einem protokoll für verlustbehaftete netzwerke
+%-> Service manager sollte die Migration in einem Verlustbehafteten Netzwerk durch ein verlustfreundliches Protokoll, wie CoAP lösen
+
+%tests auf nicht gloablen infomratioenn machen, damit gezeigt werden kann, dass auch eine lokale informationsbereitstellung zum erfolg führt
+
+%transformation in echte middleware um ereignisse service übergreifend über mehrere geräte bereitstellen zu können
+%-> There are potentially a massive number of events generated in IoT applications, which should be managed as an integral part of an IoT middleware. Event management transforms simple observed events into meaningful events.It should provide real-time analysis of high-velocity data so that downstream applications are driven by accurate, real-time information, and intelligence.
+
+%deploying von service über master instanz, so auch updates möglich
+
+%mehrere Dienste

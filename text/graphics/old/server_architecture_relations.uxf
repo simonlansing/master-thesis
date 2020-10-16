@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.2">
+  <zoom_level>11</zoom_level>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>473</x>
+      <y>242</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Service Manager :: ServiceTransporter
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>473</x>
+      <y>121</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Service Manager :: ServiceHandler
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>22</x>
+      <y>0</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;application start&gt;&gt;
+main</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>22</x>
+      <y>121</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Service Manager :: ServiceManagerCore
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>473</x>
+      <y>605</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Utils :: MigrationChecker</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>858</x>
+      <y>363</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>&lt;&lt;utility&gt;&gt;
+Utils :: NetworkFunctions</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>858</x>
+      <y>484</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>
+Utils :: NetworkPacket</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>473</x>
+      <y>726</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Utils :: NetworkRouting</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>473</x>
+      <y>484</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Utils :: NetworkSniffer</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>858</x>
+      <y>605</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Utils :: RepeatedTimer</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>UMLClass</id>
+    <coordinates>
+      <x>858</x>
+      <y>121</y>
+      <w>286</w>
+      <h>66</h>
+    </coordinates>
+    <panel_attributes>type=actclass
+
+Service</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>297</x>
+      <y>154</y>
+      <w>198</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=1
+m2=   0..1
+instructs to
+start service &gt;</panel_attributes>
+    <additional_attributes>10.0;20.0;160.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>132</y>
+      <w>132</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=1
+m2=0..1
+starts &gt;</panel_attributes>
+    <additional_attributes>10.0;20.0;100.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>176</y>
+      <w>297</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=-
+r1=1
+m2=0..1
+      reads file of &gt;</panel_attributes>
+    <additional_attributes>10.0;80.0;230.0;80.0;230.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>143</x>
+      <y>55</y>
+      <w>88</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>lt=-
+1
+starts v
+1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>704</x>
+      <y>275</y>
+      <w>143</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=1
+m2=1
+
+&lt; sends service</panel_attributes>
+    <additional_attributes>10.0;30.0;10.0;70.0;110.0;70.0;110.0;10.0;50.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>627</y>
+      <w>132</w>
+      <h>33</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>100.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>605</x>
+      <y>176</y>
+      <w>33</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-x</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>671</x>
+      <y>297</y>
+      <w>209</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>170.0;80.0;10.0;80.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>671</x>
+      <y>396</y>
+      <w>209</w>
+      <h>110</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>170.0;10.0;10.0;10.0;10.0;80.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>748</x>
+      <y>506</y>
+      <w>132</w>
+      <h>33</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;-</panel_attributes>
+    <additional_attributes>100.0;10.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>616</x>
+      <y>660</y>
+      <w>253</w>
+      <h>88</h>
+    </coordinates>
+    <panel_attributes>lt=-
+1
+gives best new server position ^
+1</panel_attributes>
+    <additional_attributes>10.0;10.0;10.0;60.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>297</x>
+      <y>110</y>
+      <w>198</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=1
+m2=   0..1
+&lt; notifies about used
+service ports</panel_attributes>
+    <additional_attributes>10.0;20.0;160.0;20.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>55</x>
+      <y>176</y>
+      <w>440</w>
+      <h>616</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1
+m2=1
+
+instructs to start up wlan interfaces &gt;</panel_attributes>
+    <additional_attributes>380.0;530.0;10.0;530.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>88</x>
+      <y>176</y>
+      <w>407</w>
+      <h>528</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1
+m2=1
+
+&lt; informs about a
+better server position</panel_attributes>
+    <additional_attributes>350.0;440.0;10.0;440.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>154</x>
+      <y>176</y>
+      <w>341</w>
+      <h>385</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1
+m2=1
+
+&lt; informs about new
+incoming network packets</panel_attributes>
+    <additional_attributes>290.0;310.0;10.0;310.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>121</x>
+      <y>176</y>
+      <w>374</w>
+      <h>473</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1
+m2=1
+informs about new
+incoming network packets &gt;</panel_attributes>
+    <additional_attributes>320.0;400.0;10.0;400.0;10.0;10.0</additional_attributes>
+  </element>
+  <element>
+    <id>Relation</id>
+    <coordinates>
+      <x>209</x>
+      <y>176</y>
+      <w>286</w>
+      <h>132</h>
+    </coordinates>
+    <panel_attributes>lt=-
+m1=0..1
+m2=1
+instructs to migrate service</panel_attributes>
+    <additional_attributes>240.0;90.0;10.0;90.0;10.0;10.0</additional_attributes>
+  </element>
+</diagram>

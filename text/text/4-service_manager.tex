@@ -1,0 +1,463 @@
+%!TEX root = ../main.tex
+\chapter[Der Service Manager als dienstorientierte Plattform]{Der Service Manager\\als dienstorientierte Plattform}
+\label{cha:service_manager}
+Die in Kapitel~\ref{cha:autonome_dienste} vorgestellten autonomen Dienste im \gls{IoT} benötigen eine einfache Möglichkeit, ihre Anwendungen den heterogenen Objekten im \gls{IoT} bereitstellen zu können.
+Eine Option zur Bereitstellung von Diensten wäre die Ausführung auf statischen, zentralen Servern.
+In kabelgebundenen oder kleinen kabellosen Netzwerken mag dies funktionieren, bei einer immer weiter wachsender Anzahl vernetzter Objekte im \gls{IoT} entstehen jedoch große Probleme.
+Paketverluste und hohen Latenzzeiten treten ein~\citep{al2015internet}, die es im \gls{IoT} zu minimieren gilt~\citep{fettweis2014tactile}.
+Eine Idee zur Lösung der Probleme ist die Verkürzung der Kommunikationswege zwischen den anfragenden Objekten und den Diensten im \gls{IoT} durch die Bereitstellung der Dienste in physischer Nähe zu den anfragenden Objekten.
+Das Modell hinter dieser Idee wird als \gls{Fog Computing} bezeichnet~\citep{cisco2015fog}.
+\\
+Die Bereitstellung der Dienste erfolgt dabei über eine Middleware, die auf den Objekten im \gls{IoT} ausgeführt wird, so die Heterogenität der Objekte in ihrer Leistungsfähigkeit sowie Kommunikationsmöglichkeiten ausgleicht und schließlich eine Interoperabilität zwischen Anwendungen und Diensten schafft~\citep{openfog2016openfog, razzaque2016middleware}.
+Die Middlewares analysieren das Nutzungsverhalten des Dienstes sowie der Clients und stellen darauf aufbauend erforderliche Kapazitäten für den Dienst in den Bereichen des \gls{IoT} bereit, wo sie benötigt werden.
+Der Nachteil dieser Middlewares ist die Anpassungsnotwendigkeit der Dienste, denn diesen wird von den Middlewares eine \gls{API} angeboten, die auf der Dienstebene implementiert werden muss.
+Losgelöst von einer eigenen von den Diensten zu implementierenden \gls{API} wird in diesem Kapitel die Service~Manager~Plattform vorgestellt.
+\begin{figure}[htb]
+	\centering
+	\begin{tikzpicture}[
+	iot node/.style={circle,draw,thick,minimum size=3mm,inner sep=0pt,outer sep=0pt,fill=green!10},
+	iot cloud/.style={cloud, cloud puffs=9.5, minimum height=90, minimum width=120, draw, thick, fill=white},
+	stack node/.style={rounded corners=5, draw, thick, minimum height=30, minimum width=130, text width=90, align=center},
+	inner stack node/.style={rounded corners=5, draw, thick, minimum height=20, text width=116, align=center},
+	fit node/.style={rounded corners=5, draw, thick, dashed},
+	zoom line right/.style={blue!40, bend right=10},
+	zoom line left/.style={blue!40, bend left=10}]
+	
+	\node[iot cloud] at (0,0) (iotcloud) {};
+	\node [iot node] (v6) at (-1.4,0.2) {};
+	\node [iot node] (v5) at (-0.8,-0.8) {};
+	\node [iot node] (v4) at (0,-0.2) {};
+	\node [iot node] (v3) at (0,1) {};
+	\node [iot node] (v2) at (1.4,0.2) {};
+	\node [iot node] (v1) at (0.8,-0.6) {};
+	\draw (v1) -- (v2) -- (v3) -- (v4);
+	\draw (v4) -- (v5) -- (v6) -- (v3);
+	
+	\node [stack node, minimum height=70] at (-5,0.5) (clientapp) {};
+	\node [anchor=south] at ([yshift=0.2em]clientapp.north) (clienttitle) {Client};
+	\node [anchor=north] at ([yshift=-0.2em]clientapp.north) (clientapptitle) {Client-Applikation};
+	\node [black!50, inner stack node, anchor=south] at ([yshift=0.4em]clientapp.south) (servicediscovery) {Diensterkennung};
+	\node [stack node, anchor=north] at ([yshift=-0.2em]clientapp.south) (tcpipstack) {TCP/IP Stack};
+	\node [fit node, fit=(clienttitle)(clientapp)(tcpipstack)] (client) {};
+	
+	\node [stack node, minimum height=70] at (5,0) (servicemanager) {};
+	\node [anchor=north] at ([yshift=-0.2em]servicemanager.north) (servicemanagertitle) {Service Manager};
+	\node [stack node, anchor=south] at ([yshift=0.2em]servicemanager.north) (autonomousservice) {Autonomer Dienst};
+	\node [anchor=south] at ([yshift=0.2em]autonomousservice.north) (servertitle) {Server};
+	\node [black!50, inner stack node, anchor=south] at ([yshift=2.6em]servicemanager.south) (servicediscovery) {Ressourcensignalisierung};
+	\node [black!50, inner stack node, anchor=south] at ([yshift=0.4em]servicemanager.south) (servicediscovery) {Dienstsignalisierung};
+	\node [stack node, anchor=north] at ([yshift=-0.2em]servicemanager.south) (tcpipstack2) {TCP/IP Stack};
+	\node [fit node, fit=(servertitle)(autonomousservice)(servicemanagertitle)(servicemanager)(tcpipstack2)] (server) {};
+	
+	\draw [zoom line right]([yshift=-0.4em]client.north east) to ([yshift=0.1em]v6.north west);
+	\draw [zoom line left]([yshift=0.4em]client.south east) to ([yshift=-0.1em]v6.south west);
+	
+	\draw [zoom line left]([yshift=-0.4em]server.north west) to ([yshift=0.1em]v2.north east);
+	\draw [zoom line right]([yshift=0.4em]server.south west) to ([yshift=-0.1em]v2.south east);	
+	\end{tikzpicture}
+	\caption[Allgemeine Übersicht über die Plattform mit der Client-Server-Architektur eines Service~Managers]{Allgemeine Übersicht über die Plattform mit der Client-Server-Architektur eines Service~Managers, die auf allen Objekten im \gls{IoT} ausgeführt werden kann, die Ausführung des eigenständigen autonomen Dienst vollständig verwaltet und die Signalisierung von Änderungen am Dienstzustand übernimmt. Die Clients können sich für diese Änderungen mit einer Komponente zur Diensterkennung registrieren.}
+	\label{fig:service_manager_stack}
+\end{figure}
+\\
+Die Service~Manager~Plattform hat das Ziel beliebige autonome Dienste im \gls{IoT} ohne proprietäre dienstseitige Anpassungen bereitzustellen.
+Dienste, die bereits zuvor auf den einzelnen Objekten im \gls{IoT} ausgeführt werden konnten, sollen durch die Plattform ebenfalls ohne notwendige Anpassungen möglichst strategisch optimal im \gls{IoT} positioniert werden.
+Dies gelingt durch die Ausführung der Plattform auf allen für den Dienst vorgesehen Objekten im \gls{IoT} und einer zyklischen Migrationen der Dienste zwischen den Objekten (vgl.~Kapitel~\ref{sec:positionierung_der_autonomen_dienste}).
+Die Abbildung~\ref{fig:service_manager_stack} zeigt die allgemeine Übersicht über die Plattform mit der Client-Server-Architektur eines Service~Managers, die die eigenständigen autonomen Dienste vollständig verwaltet.
+Der Service~Manager unterstützt mit der Dienst- und Ressourcensignalisierung dabei zwei wesentlicher Funktionen für die Bereitstellung eines verteilten Systems im \gls{IoT}.
+Diese werden in den folgenden Unterkapiteln näher beschrieben.
+\\
+Voraussetzung zur Ausführung der Plattform ist lediglich eine Unterstützung von Python~2.7 seitens der Objekte.
+Die komponentenbasierte Architektur des Service~Managers ist so modular aufgebaut, dass eine Erweiterung ohne große Anpassungen möglich ist.
+Ist ein Dienst an einer zuvor festgelegten Position in die Plattform eingespeist worden, organisiert diese anhand des Nutzungsverhalten des Dienstes und der Clients alle notwendigen Schritte zur optimalen Positionierung im \gls{IoT}.
+Dabei deaktivieren die Service~Manager auf den Objekten, auf denen sie gerade keinen Dienst ausführen, die nicht notwendigen Teilkomponenten ihres Systems, um wichtige Ressourcen der Objekte im \gls{IoT} einzusparen.
+Während der Bereitstellung des Dienstes auf dem Objekt im \gls{IoT} werden die Teilkomponenten aktiviert, sodass bei der Suche der optimalen Positionierung im \gls{IoT} verschiedene Schritte unternommen werden können bis der Dienst schließlich migriert werden kann.
+Das dazugehörige zyklische Verfahren ist in Abbildung~\ref{fig:service_manager_hauptfunktion} illustriert.
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[every node/.style={
+		signal, signal from=west, signal to=east,	
+		thick,
+		draw=black,
+		rounded corners,
+		text width=50,
+		align=left,
+		xshift=32,
+		minimum height=60}]
+	\node at (0,0)[
+	signal from=nowhere,
+	shading=shading1,
+	] (n1) {Dienst \mbox{erhalten} und \mbox{starten}};
+	
+	\node at (n1.east) [
+	fill=purple!30,
+	text width=30,
+	xshift=-10,
+	] (n2) {Netzwerk-analyse};
+	
+	\node at (n2.east) [
+	fill=blue!30,
+	] (n3) {Berechnung \mbox{der~besten} \mbox{Standorte}};
+	
+	\node at (n3.east) [
+	fill=red!30,
+	] (n4) {Migrations-entscheidung treffen};
+	
+	\node at (n4.east) [
+	shading=shading2,
+	] (n5) {Dienst \mbox{migrieren} \mbox{oder~weiter} \mbox{analysieren}};	  
+	\end{tikzpicture}
+	\caption[Die zyklische Verarbeitung eines Service~Managers in der Plattform]{Die zyklische Verarbeitung eines Service~Managers in der Plattform, bei der die notwendigen Schritte zwischen dem Erhalt und weiteren Migrationen eines Dienstes sequentiell aufeinanderfolgenden. Die verschiedenen Farben der einzelnen Schritte deuten auf die Komponenten des Service~Managers hin, die diesen Schritt verarbeiten. Diese sind in Abbildung~\ref{fig:software_architecture} dargestellt.}
+	\label{fig:service_manager_hauptfunktion}
+\end{figure}
+\newpage
+Zunächst werden Anforderungen an die Service~Manager~Plattform beschrieben, die beim Entwurf der Architektur und der darauffolgenden Entwicklung zu beachten sind und in funktionale und nicht-funktionale Anforderungen kategorisiert werden.
+\\
+Abschließend wird das der Service~Manager~Plattform zugrundeliegende \gls{Entwurfsmuster} und die damit einhergehend entworfene Softwarearchitektur beschrieben.
+Die einzelnen Komponenten des Service~Managers werden hier genau erläutert und die in Abbildung~\ref{fig:service_manager_hauptfunktion} dargestellten Funktionen detailliert beschrieben.
+Dabei ist schließlich zu sehen, dass die Berechnung der Positionierung auf Basis der topologischen Verfahren aus Kapitel~\ref{sec:topologische_verfahren_der_migration} mit den definierten Leistungsmetriken aus Kapitel~\ref{sec:leistungsmetriken_im_iot} erfolgt.
+
+\section{Anforderungen an die Plattform}
+\label{sec:anforderungen_an_die_plattform}
+Die Service~Manager Plattform stellt im Allgemeinen einen Dienst bereit und differenziert sich von einer Middleware dadurch, dass sie die Komplexität eines einzelnen Objektes, in diesem Fall die des \glsmgen{IoT}, nicht für den Dienst vollständig abstrahiert~\citep{neely2006adaptive}.
+Durch dieses Vorgehen können die autonomen Dienste wie die in Kapitel~\ref{cha:autonome_dienste} eigenständig entwickelt werden und bleiben autonom.
+Dienste müssen sich bei der Plattform zwar mit der eigenständigen Bereitstellung ihrer Anwendung beispielsweise durch Webservices befassen, wie es auch bei Applikationen im Internet notwendig ist, doch die Problematiken des unterliegenden \gls{IoT}-Gesamtsystems werden von der Service~Manager Plattform gelöst.
+Bei der Bereitstellung einer solchen Plattform im \gls{IoT} muss zunächst ein Anforderungsrahmen geschaffen werden, der bei dem Entwurf und der Implementierung des Service~Managers schließlich zur Geltung kommt.
+Die Anforderungen des Rahmens lassen sich in zwei Untergruppen eingeteilt, den nicht-funktionalen und den funktionalen Anforderungen.
+\\
+Aus zwei Forschungsbereichen zu \gls{IoT} lassen sich acht nicht-funktionalen Anforderungen an Middlewares entnehmen, die ebenfalls für die Service~Manager~Plattform maßgeblich sind.
+Bei der Bereitstellung allgemeiner Middlewares für das \gls{IoT} sind diese bereits spezifiziert worden~\citep{razzaque2016middleware}, doch darüber hinaus existieren weitere Anforderungen an den Architekturvorschlag der \citeauthor{openfog2016openfog} zu \gls{Fog Computing}~\citep{openfog2016openfog}:
+\begin{description}
+	\item[Autonomie:] So wie die Dienste eine Autonomie aufweisen (vgl.~Kapitel~\ref{sec:autonomie_von_diensten}), so besteht auch die Anforderung eines gewissen Grades Autonomie an den Service~Manager.
+	Er soll autonom den Betrieb des Dienstes garantieren und diesen während des gesamten Betriebslebenszyklus verwalten.
+	Auf lokalen Entscheidungen basierend soll der Betrieb des Dienstes an strategisch sinnvollen Positionen im \gls{IoT} selbstoptimierend und selbstorganisierend gewährleistet sein \citep{zorzi2010today}.
+	Dieser dezentrale Ansatz zeigt die Unterschiede zu Diensten, die in der \gls{Cloud} bereitstellt werden.
+	Ein weiterer Punkt der Autonomie ist die Signalisierung für mögliche Konsumenten des Dienstes, die die Plattform bei der Bereitstellung des Dienstes vorzunehmen hat (vgl.~Abbildung~\ref{fig:service_manager_stack}).
+
+	\item[Offenheit:] Zur Erreichung des ultimativen Ziels eines Netzwerks mit \glqq Ubiquitous Services\grqq{} (vgl.~Kapitel~\ref{sec:dienste_im_internet_der_dinge}) muss eine Offenheit gegenüber anderen Systeme und Diensten gewährleistet sein.
+	Der Service~Manager soll eine transparente Entwicklung und zusätzlich einen hohen Freiheitsgrad bei der Auswahl des bereitzustellenden Dienstes aufweisen.
+	Dies ist durch eine starke Entkopplung von Dienst und Service~Manager möglich und sorgt für eine hohe Portabilität des Dienstes.
+	Eine Entkopplung aller Komponenten des Service~Managers ermöglicht zusätzlich für die Möglichkeit einer schnellen Erweiterung.
+	Abschließend sorgt eine offene Kommunikation im Netzwerk für eine effiziente Bereitstellung des Dienstes, indem der Service~Manager alle notwendigen Informationen, wie Prozessleistung, Speicherkapazitäten, Sensorfähigkeit und die Leistung kabelloser Verbindungen, der Objekte im Netzwerk erhält und auch selber bereitstellt.
+	
+	\item[Skalierbarkeit:] Die Skalierbarkeit ermöglicht es dem Service~Manager die Dynamik des \glsmgen{IoT} zu adressieren.
+	Wird aus den topologischen Verfahren in Kapitel~\ref{sec:topologische_verfahren_der_migration} ein Ansatz auf der Basis lokaler Information gewählt, so kann der Service~Manager in einem stetig wachsenden \gls{IoT} angewandt werden, vorausgesetzt, die neuen Objekte unterstützen die Plattform respektive den Dienst in ihren Interaktionen.
+	Die Leistungsfähigkeit des Service~Managers soll so skalierbar sein, dass er den Anwendungsanforderungen entgegen kommen kann, wie beispielsweise geringe Latenzen zwischen Sensoren und Aktoren auf Dienstebene.
+	Die Adressierung der vielen Anwendungen, Benutzer und Objekte im \gls{IoT} kann schließlich durch die Unterstützung von \gls{IPv6} erreicht werden~\citep{razzaque2016middleware, atzori2010internet}.
+	Abschließend kann eine Verbesserung in der Skalierbarkeit durch eine lose Kopplung der Plattformkomponenten und eine vollständige Entkopplung der Dienstlogik von der Plattform erreicht werden.	
+	
+	\item[Sicherheit:] Bei der Sicherheit müssen verschiedene Aspekte Beachtung finden.
+	Zum einen haben der Dienst und der Service~Manager in allen Komponenten Datenschutz zu gewährleisten.
+	Doch auch die Privatsphäre der Anwender muss geschützt werden.
+	So könnte die Kontextabhängigkeit des Service~Managers persönliche Informationen, wie den Standort von Objekten oder Personen, offenbaren.
+	Daraus ist zu schließen, dass eine Migration zwischen verschiedenen Segmenten des \glsmgen{IoT} nur durch eine explizite Zustimmung möglich sein darf (vgl.~Abbildung~\ref{fig:internet_and_iot_segments}).
+	Damit einhergehend sollten neu hinzugefügte Objekte nicht direkt als mögliche Kandidaten für eine Ausführung des Dienstes in Betracht gezogen werden, sie müssen zunächst in einer bestimmten Form Vertrauen aufbauen.
+	
+	\item[Echtzeit, Aktualität:] Der Service~Manager muss Dienste mit Echtzeitanforderungen unterstützen und dabei die Aktualität der Daten garantieren können.
+	Verzögerte Informationsbereitstellung machen das System in Bereichen wie Transport und Gesundheitswesen unbrauchbar und möglicherweise sogar gefährlich.
+	Dies kann durch eine Bereitstellung des autonomen Dienstes nahe der konsumierenden Objekte erreicht werden.
+	
+	\item[Zuverlässigkeit:] Auch bei Fehlern soll der Service Manager weiterhin zuverlässig funktionsfähig bleiben.
+	Die einzelnen Komponenten und der Dienst müssen daher ebenfalls zuverlässig sein, so dass der Service Manager die vollständige Funktionsfähigkeit gewährleisten kann.
+	Dies schließt sowohl die Kommunikation, Datenhaltung als auch die verwendete Technologien mit ein.
+	Diese Zuverlässigkeit bildet die Grundlage für die Verfügbarkeit des Systems.
+	
+	\item[Verfügbarkeit:] Zu jeder Zeit muss der Service~Manager die Verfügbarkeit des Dienstes und seiner Funktionen garantieren.
+	Dies gilt auch bei aufgetretenen Fehlern im System, bei denen die Erholungszeit und die Fehlerfrequenz zu minimieren gilt.
+	Durch die Zusammenarbeit der Anforderungen von Zuverlässigkeit und Verfügbarkeit wird schließlich eine hohe Fehlertoleranz gewährleistet, die für den Dienst unabdingbar ist.
+		
+	\item[Einfache Verteilung: ] Die Service~Manager~Plattform, der Dienst und die Updates dieser beiden Komponenten sollen einfach ohne großen Aufwand auf die Objekte im \gls{IoT} verteilt werden können.
+	Dies kann durch eine einfache und schmale Konfiguration erreicht werden.	
+\end{description} 
+
+Neben diesen nicht-funktionalen Anforderungen existieren die folgenden fünf funktionale Anforderungen, die sich größtenteils an die Service~Manager Plattform richten, aber auch teilweise die zu unterstützende Dienst betreffen~\citep{razzaque2016middleware}:
+\begin{description}
+	\item[Ressourcenentdeckung:] Im \gls{IoT} werden durch die heterogenen Objekte viele verschiedene Ressourcen bereitgestellt, die angefangen von der grundlegenden Peripherie wie Sensoren, über die Prozessorleistung, Speichergröße und Kommunikationsmodule bis hin zur Netzwerktopologie in verschiedene Kategorien klassifiziert werden können (vgl.~Kapitel~\ref{subsec:eigenschaften_der_objekte}).
+	Hier können zusätzlich auch von den Objekten angebotene Dienste, die der Service~Manager nicht verwaltet, als eine Ressource betrachtet werden.
+	\\
+	Wie bereits in Kapitel~\ref{subsec:global_information} beschrieben wurde, ist eine globale Bereitstellung dieses Wissens in einem realen System nicht umsetzbar, da die Infrastruktur und Umgebung des \glsmgen{IoT} schier zu groß und dynamisch ist.
+	Ebenso wäre eine manuelle Bereitstellung einer Ressourcenübersicht undenkbar, was schließlich zu dem Schluss führt, dass sie automatisiert werden muss.
+	Dies sollte nicht wie bei zentralen System über einen dafür bestimmten Server laufen, sondern über automatisierte Mechanismen zur Ressourcensignalisierung in jedem einzelne Objekt, die die Objektpräsenz und die angebotenen Ressourcen bekannt geben.
+	Diese Aufgabe soll der Service~Manager durch die Ressourcen- und Dienstsignalisierung übernehmen (vgl.~Abbildung~\ref{fig:service_manager_stack}), wobei die Skalierbarkeit aufgrund der im \gls{IoT} vorhandenen Ressourcenknappheit Beachtung finden muss.	
+	
+	\item[Ressourcenverwaltung:] Werden die Ressourcen eines dienstausführenden Objektes knapp, können Probleme bei der Bereitstellung einer akzeptablen \gls{QoS} entstehen.
+	Aus diesem Grund muss für die globale Anwendung, respektive dem unterliegenden Dienst die Ressourcennutzung des Objektes überwacht und auf auftretende Konflikte reagiert werden.
+	Als Konfliktlösung eignen sich beispielsweise die Beschaffung neuer Ressourcen durch eine Migration auf Objekte, die ein größeres Ressourcenkontingent aufweisen, bis die Bedürfnisse des Dienstes erfüllt sind.
+	
+	\item[Datenverwaltung:] Daten sind die Grundlage für Anwendungen im \gls{IoT}.
+	Dabei kann man zwischen den aufgenommenen Sensordaten und den Daten aus der Netzwerkinfrastruktur differenzieren, die über verschiedene Verfahren erfasst werden (vgl.~Kapitel~\ref{sec:topologische_verfahren_der_migration}).
+	Während für den Service~Manager die Daten aus der Netzwerkinfrastruktur für die Auswertungen der Netzwerkauslastungen relevant sind, übernimmt der Dienst die Datenverwaltung aufgenommener Sensordaten der Objekte.
+	Neben der Verwaltung ist er auch für die Anschaffung, Verarbeitung, Aggregation und Speicherung dienstrelevanter Daten zuständig.
+	
+	\item[Ereignisverwaltung:] Durch die hohe Anzahl vieler heterogener Objekte entstehen im \gls{IoT} erkleckliche Mengen an Ereignissen, die sowohl für den Dienst als auch für den Service~Manager relevant sind.
+	Beide Softwarekomponenten sollen die für sie relevanten Teile der Ereignisse separat entnehmen, auswerten und daraus Rückschlüsse für ihre Aufgaben ziehen.
+	Würde der Service~Manager diese, wie bei Middlewares, bereitstellen verlören die Dienste einen großen Teil ihrer geforderten Autonomie.
+	
+	\item[Quellcodeverwaltung:] In einer \gls{IoT}-Umgebung kann die Verteilung von Quellcode herausfordernd sein.
+	Durch Migrationen und eines global einheitlichen Versionsstandes soll die Service~Manager~Plattform diese Aufgabe für den Dienst zwischen den verschiedenen Objekten im \gls{IoT} übernehmen.
+\end{description}
+
+%https://msdn.microsoft.com/en-us/library/ee658117.aspx#ComponentBasedStyle
+%Reusable. Components are usually designed to be reused in different scenarios in different applications. However, some components may be designed for a specific task.
+%Replaceable. Components may be readily substituted with other similar components.
+%Not context specific. Components are designed to operate in different environments and contexts. Specific information, such as state data, should be passed to the component instead of being included in or accessed by the component.
+%Extensible. A component can be extended from existing components to provide new behavior.
+%Encapsulated. Components expose interfaces that allow the caller to use its functionality, and do not reveal details of the internal processes or any internal variables or state.
+%Independent. Components are designed to have minimal dependencies on other components. Therefore components can be deployed into any appropriate environment without affecting other components or systems.
+
+
+\section{Entwurfsmuster und Softwarearchitektur}
+\label{sec:entwurfsmuster_und_architektur}
+
+\begin{figure}[htb]
+	\centering
+	\begin{tikzpicture}[
+	large stack node/.style={rounded corners=5, draw, thick, minimum height=45, minimum width=320, text width=290, align=center},
+	small stack node/.style={large stack node, minimum width=100, text width=90},
+	fit node/.style={rounded corners=5, draw, thick, dashed},
+	arrow node/.style={anchor=east,draw, black, thick,single arrow,single arrow head extend=3,inner sep=2,rotate=90,minimum height=29.75},
+	double arrow node/.style={arrow node,double arrow,double arrow head extend=3,minimum height=29},
+	external arrow node/.style={arrow node,left color=white,minimum height=33}]		
+	
+	% service manager core
+	\node [fill=green!30,large stack node] at (0,0) (servicemanagercore) {Service Manager Core};
+	
+	% top component row
+	\node [fill=yellow!30, small stack node, anchor=south west] at ([yshift=30]servicemanagercore.north west) (servicetransporter) {Service Transporter};
+	\node [fill=orange!30,small stack node, anchor=south east] at ([yshift=30]servicemanagercore.north east) (servicehandler) {Service Handler};
+	
+	% bottom component row
+	\node [fill=blue!30,small stack node, anchor=north west] at ([yshift=-30]servicemanagercore.south west) (networkrouter) {Network Router};
+	\node [fill=purple!30,small stack node, anchor=north] at ([yshift=-30]servicemanagercore.south) (networksniffer) {Network Sniffer};
+	\node [fill=red!30,small stack node, anchor=north east] at ([yshift=-30]servicemanagercore.south east) (networkutilizationinspector) {Network\\Utilization Inspector};
+	
+	% set title of service manager and set fitting around
+	\node [anchor=south] at ([yshift=70]servicemanagercore.north) (servicemanagertitle) {Service Manager};
+	\node [fit node, fit=(servicetransporter)(servicemanagertitle)(networkutilizationinspector)] (servicemanager) {};
+	
+	% coordinates to get width of fitting area, setting service
+	\coordinate (servermanagerleft) at (servicemanager.north west);
+	\coordinate (servermanagerright) at (servicemanager.north east);		
+	\node [large stack node, inner sep=0pt, yshift=40, fit=(servermanagerleft)(servermanagerright)] (dienst) {};
+	\node [] at (dienst.center) {Dienst};
+	
+	% arrows from router, sniffer and utilization inspector to core
+	\coordinate[yshift=30] (northofnetworkrouter) at (networkrouter.north);		
+	\node [double arrow node] (test) at (northofnetworkrouter) {};		
+	\coordinate[yshift=30] (northofnetworksniffer) at (networksniffer.north);		
+	\node [arrow node] (test) at (northofnetworksniffer) {};		
+	\coordinate[yshift=30] (northofnetworkutilizationinspector) at (networkutilizationinspector.north);		
+	\node [double arrow node] (test) at (northofnetworkutilizationinspector) {};
+	
+	% arrows from core to transporter and handler
+	\coordinate[yshift=-30] (southofservicetransporter) at (servicetransporter.south);		
+	\node [double arrow node,rotate=180] (test) at (southofservicetransporter) {};		
+	\coordinate[yshift=-30] (southofservicehandler) at (servicehandler.south);		
+	\node [double arrow node,rotate=180] (test) at (southofservicehandler) {};
+	
+	% arrows from transporter and handler to service
+	\coordinate[yshift=33.25] (northofservicetransporter) at (servicetransporter.north);		
+	\node [external arrow node] (test) at (northofservicetransporter) {};
+	\coordinate[yshift=33.25] (northofservicehandler) at (servicehandler.north);		
+	\node [external arrow node] (test) at (northofservicehandler) {};
+	\end{tikzpicture}
+	\caption[Komponentenarchitektur des Service Managers]{Komponentenarchitektur des Service Managers, bei der der Sevice Manager Core die Vermittlerrolle zwischen den Komponenten übernimmt und diese miteinander verknüpft. Während die unterste Schicht die Funktionen der Analyse, zyklischen Verarbeitung und Entscheidung zur Migration bereitstellt, bildet die oberste Schicht Funktionalitäten für die Migration und Prozessbildung des eigentlichen Dienst und seinen Dateien ab. Die Pfeile stellen den Kommunikationsverlauf zwischen den Komponenten dar, wobei die Kommunikation in Richtung des Dienstes nur auf Systemebene durch die Verwaltung von Dienstdateien gegeben ist.}
+	\label{fig:software_architecture}
+\end{figure}
+
+Die Anforderungen an die Service~Manager~Plattform aus Kapitel~\ref{sec:anforderungen_an_die_plattform} bilden einen Rahmen, aus der sich eine Softwarearchitektur ableiten lässt.
+Neben diesen Anforderungen existiert noch ein weiterer Punkt, der speziell die Architektur der Service~Manager~Plattform betrifft, nämlich eine hohe Flexibilität, so dass das Hinzufügen und die Weiterentwicklung von Funktionalitäten ohne große Umstrukturierung und Neuimplementierung möglich ist~\citep{razzaque2016middleware}.
+Durch eine Gliederung aller Aufgabenbereiche des Service~Managers in einzelne, dedizierte Komponenten ist es möglich diese Flexibilität zu erreichen.
+Einhergehend steigert diese Modularität auch die Wartbarkeit der gesamten Service~Manager~Plattform dadurch, dass die einzelnen Komponenten unabhängig voneinander getestet werden können.
+Bei der Erstellung einer geeigneten Softwarearchitektur, die diese Flexibilität unterstützt, müssen zunächst die Eigenschaften von Komponenten und ihre Kommunikationswege analysiert werden.
+In einer komponentenbasierten Architektur haben die Komponenten einige Eigenschaften~\citep{microsoft2009application}:
+\begin{itemize}
+	\item Generell wiederverwendbar in verschiedenen Szenarien und Anwendungen. Teilweise können Komponenten jedoch auch spezifisch sein.
+	\item Ersetzbar durch ähnliche Komponenten.
+	\item Nicht kontextspezifisch und somit über verschiedene Umgebungen hinweg einsetzbar. Spezifische Daten wie Zustandsdaten sollen der Komponente übergeben und nicht durch diese angefragt werden.
+	\item Erweiterbar um neue Funktionen und neues Verhalten.
+	\item Eingekapselt mit einem Interface nach außen, über das Funktionen ausgeführt werden können aber keine Details über innere Prozesse oder Variablen offenbart.
+	\item Unabhängig zu anderen Komponenten, sodass sie zwischen verschiedenen Umgebungen verteilt werden können.
+\end{itemize}
+Diese Eigenschaften werden durch verschiedene Architekturmuster adressiert~\citep{gamma2015designpatterns}.
+Am besten eignet sich dabei das \gls{Verhaltensmuster} \textit{Mediator} nach~\citep[][Kapitel 5.5]{gamma2015designpatterns} als Grundlage für die Softwarearchitektur.
+Bei dem \gls{Verhaltensmuster} Mediator verknüpft eine Hauptkomponente, die als Vermittler (engl. Mediator) bezeichnet wird, alle vorhandenen Komponenten miteinander.
+Durch die Verarbeitung aller Anfragen und Interaktionen der Komponenten durch den Vermittler wird eine ereignisorientierte Kommunikation zwischen den einzelnen Komponenten erzeugt.
+Bei Bedarf reagiert der Vermittler mit weiteren auszuführenden Aufgaben und steuert so das gesamte Verhalten des Programms.
+Eine lose Kopplung wird dadurch begünstigt, dass die Komponenten sich untereinander nicht gegenseitig referenzieren müssen.
+\\
+Ein Kriterium für die Auswahl dieses \glsmgen{Verhaltensmuster} ist, dass die ereignisorientierte Kommunikation zwischen den Komponenten des Service Managers zwar wohldefiniert erfolgt, diese jedoch sehr komplex sein kann.
+Einzelne Komponenten warten gegenseitig auf Ereignisse bevor sie ihren geforderten Arbeitsschritt weiter ausführen.
+Ohne das \gls{Verhaltensmuster} würden diese Komponenten eine große Abhängigkeit bilden.
+Ein weiteres Kriterium stellt die einfache Anpassbarkeit des verteilten Verhaltens im Vermittler dar, denn bestehende und neue Komponenten können hier einfach miteinander verknüpft werden.
+Eine vollständige Erweiterung neuer Funktionalitäten des Service Managers ist durch Änderung bestehender oder direktes Hinzufügen neuer Komponenten auch ohne weitreichende Unterklassenbildung stets gewährleistet.
+\\
+Im Service Manager lassen sich diese eigenständigen Komponenten in eine dreischichtige, komponentenbasierte Architektur aufteilen (vgl. Abbildung~\ref{fig:software_architecture}).
+Die Basis des Server Managers wird durch den \textit{Service Manager Core} gebildet, der als Vermittler nach dem \gls{Verhaltensmuster} Mediator arbeitet.
+Eine weitere Schicht wird durch die drei Komponenten \textit{Network Utilization Inspector}, \textit{Network Routing} und \textit{Network Sniffer} gebildet.
+Wird ein Dienst durch den Service Manager auf dem Objekt ausgeführt, werden diese Komponenten aktiv geschaltet und überprüfen die momentane Ressourcenauslastung des Objektes.
+Eine Ressourcensignalisierung könnte in dieser Architekturschicht stattfinden, ist aber aufgrund des in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} durchgeführten \gls{SDN} nicht aktiv.
+Mit einem Verfahren aus Kapitel~\ref{sec:topologische_verfahren_der_migration} wird anhand der der topologischen Charakteristika (vgl. Kapitel~\ref{cha:topologische_charakteristika}) zyklisch überprüft, ob ein anderes bekanntes Objekt im \gls{IoT} besser für die Ausführung des Dienstes geeignet ist.
+Ist das der Fall, übermitteln diese Komponenten ein Signal für eine mögliche Migration des Dienstes an den Service Manager Core weiter.
+Die dritte und oberste Softwareschicht besteht aus zwei Komponenten, die der Verwaltung einer laufenden Dienstinstanz und zum Transport des Dienstes zu anderen Objekten im \gls{IoT} dient.
+Zusätzlich wird hier die Dienstsignalisierung erledigt. 
+Aufgeteilt ist diese Softwareschicht in den \textit{Service Transporter} und den \textit{Service Handler}.
+Die technische Umsetzung und erwähnenswerte Besonderheiten dieser Komponenten werden in den folgenden Unterkapiteln beschrieben.
+
+\subsection{Service Manager Core}
+Der Service Manager Core ist für die Hauptfunktionalitäten des Systems zuständig und initialisiert als Vermittler des Systems alle vom Service~Manager benötigten Komponenten.
+Konfiguriert werden kann der gesamte Service Manager über die in Tabelle~\ref{tab:konfiguration_argumente} angegebenen Übergabeparameter, die der Service Manager Core verarbeitet und den anderen Komponenten bereitstellt.
+\begin{table}[h]
+	\centering
+	\includegraphics{tables/service_manager_configuration_table.pdf}
+	\caption[Konfigurationsargumente zur Einstellung einer Instanz des Service Managers]{Konfigurationsargumente zur Einstellung einer Instanz des Service Managers. Diese Argumente können dem Service Manager zu Beginn übermittelt und so die Hauptfunktionen gesteuert werden. Der Service Manager Core stellt die Argumente den anderen Komponenten bereit.}
+	\label{tab:konfiguration_argumente}
+\end{table}
+Darüber hinaus stellt der Service Manager Core vordefinierte \textit{Callback}-Funktionen für die Komponenten bereit.
+Da die Komponenten eine Referenz auf den Service Manager Core haben, können sie mithilfe der Funktionen Ereignisse auslösen und komponentenübergreifende Statusinformationen, wie die Konfigurationsparameter, abfragen.
+Durch diese Entkopplung wird im Service~Manager eine Ausfallsicherheit gewährleistet, sodass bei auftretenden Fehlern nicht der gesamte Programmablauf zum Erliegen kommt, sondern nur einzelne Komponenten.
+Löst eine Komponente ein Ereignis im Service Manager Core aus, reagiert dieser unmittelbar mit den angefragten Ergebnissen.
+Lediglich für die Migrationsfunktionalitäten relevante Ereignisse werden nicht sofort vom Service Manager Core abgearbeitet, sondern zunächst nur bei ihm registriert.
+Diese werden schließlich in einer separaten Hauptschleife in einer definierten Reihenfolge sequenzielle abgearbeitet, sodass ein dauerhaft logischer Status des Systems gewährleistet werden kann.
+Komponenten können somit keine inkonsistenten Zustände der Kernkomponente auslösen, wie beispielsweise parallel das Starten eines Dienstes und eine Löschung der für das Starten des Dienstes benötigten Dateien.
+
+\subsection{Network Sniffer}
+\label{sub:entwurfsmuster_und_architektur_network_sniffer}
+Jeder beliebige Netzwerkdienst soll als wandernder Dienst im \gls{IoT} ausgeführt werden können, ohne dass explizite Anpassungen, wie die Implementierung einer \gls{API}, für die Service~Manager~Plattform vorgenommen werden muss.
+Um dennoch eine Analyse über das Nutzungsverhalten des Dienstes im Netzwerk durchführen zu können, wird eine Komponente benötigt, die den Datenverkehr des Services von außen beobachten kann.
+Diese Aufgabe übernimmt die Network Sniffer Komponente.
+\\
+Nach einem erfolgreichen Start des Dienstes durch den Service Handler (vgl.~Kapitel~\ref{sub:entwurfsmuster_und_architektur_service_handler}) erhält der Network Sniffer die \gls{PID} des gestarteten Dienstes auf dem Objekt.
+Es wird davon ausgegangen, dass die für den Service Manager relevanten Netzwerkdienste mit den Transportprotokollen \gls{TCP} und \gls{UDP} arbeiten. Aus diesem Grund bringt der Network Sniffer zunächst die vom ausführenden Dienst geöffneten Ports in Erfahrung.
+Dies wird durch das Diagnose-Werkzeug \inlinecode{netstat} mit den Argumenten \inlinecode{-tlnup} durchgeführt.
+Steht \inlinecode{netstat} nicht zur Verfügung, können die offenen Ports auch direkt aus den Dateien \inlinecode{/proc/net/tcp} und \inlinecode{/proc/net/udp} des dem Service Manager unterliegendem Linuxsystems ausgelesen werden.
+Innerhalb der Dateien enthält jede Zeile das Feld \inlinecode{local\_address} mit der lokalen IP-Adresse und dem offenen Port in hexadezimalen Schreibweise sowie das dazugehörige Feld \inlinecode{inode}.
+Über die \inlinecode{inode} kann schließlich mit dem Befehl \lstinline[basicstyle=\ttfamily]{find /proc -lname $"$socket:\[$\$$INODE\]$"$ 2> /dev/null} geprüft werden, zu welchem Prozess mit zugehöriger \gls{PID} der jeweilige Eintrag gehört.
+\\
+Darauf folgt eine fortwährende Untersuchung des Netzwerks auf neue ein- und ausgehende Pakete am Objekt im \gls{IoT}.
+Dabei wird der Paket-Sniffer \inlinecode{tcpdump} mit den Argumenten \inlinecode{-ntlqxx -Q inout (-i <interface>)*} verwendet \cite{TcpDump}.
+Von Interesse ist hier das Argument zu den untersuchenden Netzwerkinterfaces.
+Sind mehrere Netzwerkinterfaces vorhanden und soll der Dienst zum Beispiel nur in einem kabellosen Netzwerk nach IEEE~802.11 wie im \gls{MIOT}-Testbed angeboten werden, so sind für die gesamte Analyse auch nur entsprechende kabellose Netzwerkinterfaces relevant.
+Diese können mit dem Argument \inlinecode{-i} bereits zum Aufnahmezeitpunkt mit \inlinecode{tcpdump} herausgefiltert werden, wodurch die Rechenlast des Service Managers reduziert wird.
+\\
+Die entnommenen Netzwerkpakete von \inlinecode{tcpdump} werden jeweils in ein \gls{Wertobjekt}~\citep[][Seite 486]{fowler2002patterns} der Klasse \inlinecode{servicemanager.utils.NetworkPacket} entpackt.
+Stimmt der Port im \gls{TCP}- oder \gls{UDP}-Header mit den zuvor ermittelten Ports und die IP-Adresse des Empfängers respektive Senders im IP-Header mit der eigenen IP-Adresse überein, wird das Netzwerkpaket über eine Callback-Funktion dem Service Manager Core als Vermittler des Service Managers weitergegeben.
+Auch für den Dienst irrelevante Netzwerkpakete werden über eine separate Callback-Funktion dem Service Manager Core übermittelt.
+So könnte die Auslastung durch den Dienst im Verhältnis zur allgemeinen Netzwerkauslastung am Objekt im \gls{IoT} ermittelt werden.
+
+\subsection{Network Router}
+\label{sub:entwurfsmuster_und_architektur_network_router}
+Hinter dem Network Router verbirgt sich die Logik zum Auffinden der Objekte im \gls{IoT}, die nach der momentanen Situation am besten zum Ausführen des Dienstes geeignet sind.
+Diese Komponente bestimmt zusammen mit dem Network Sniffer das Verfahren zur Aufnahme und Verarbeitung der Leistungsmetriken (vgl.~Kapitel~\ref{sec:leistungsmetriken_im_iot}).
+Bei der Wahl einer anderen Leistungsmetrik müssen diese Komponenten angepasst werden.
+\\
+Mithilfe des \textit{Dijkstra}-Algorithmus zum Lösen von \textit{Shortest Path}-Problemen wird zu Beginn der Ausführungszeit des Service~Managers eine \(m \times m\) Kostenmatrix \(K\) erstellt, bei der \(m\) die Anzahl der Knoten im aktuellen \gls{IoT} definiert.
+Die Daten für die Berechnung werden aus der zuvor generierten Adjazenzliste entnommen (vgl.~Kapitel~\ref{sec:datenstruktur_der_topologischen_charakteristika}).
+Sie enthält alle Knoten und deren Nachbarn des Netzwerkes.
+Mit den Eigenschaftsfeldern einer Kante zwischen zwei Knoten, wie zum Beispiel \gls{ETX} oder \gls{Durchsatz}, kann die Adjazenzliste als ein gerichteter und gewichteter Graphen angesehen werden.
+Die Stabilität der Leistungsmetriken bei schwankenden Netzwerkeigenschaften erlaubt eine Verwendung aus den zuvor durchgeführten Messungen~\citep{das2007studying}.
+Der Dijkstra-Algorithmus berechnet daraus die kürzesten Pfade zwischen allen Knoten des Netzwerkes.
+Die Gesamtkosten eines jeden Pfades werden in die Kostenmatrix eingetragen und für eine spätere Verwendung bereitgestellt.
+Durch die vorberechnete Kostenmatrix ist es möglich, das Abrufen während der Laufzeit auf \(\bigO{\left(1\right)}\) zu beschleunigen, da für jedes Knotenpaar keine Berechnungen mehr nötig sind.
+Die Berechnung des am besten zum Ausführen des Dienstes geeigneten Objektes im \gls{IoT} erfolgt auf Basis der letzten Netzwerkaktivitäten am Dienst.
+Die dafür benötigten Informationen werden durch den Network Sniffer ermittelt und vom Network Utilization Inspector bereitgestellt.
+\\
+Die Informationen beinhalten die vom Dienst empfangenen Datenmengen \(D_i\) und gesendeten Datenmengen \(D_o\) jeweils in Byte und sind aufgeteilt nach den zuletzt verbundenen Hosts \(h \in H\).
+Bei der Berechnung werden die \(n\) Knoten aus der Menge der möglichen dienstausführenden Objekte \(N_{\text{Service}}\) betrachtet und eine absteigende Rangliste \(R\) nach der Formel~\ref{eqn:central_node_alg} erstellt.
+Die Funktion \(g(n)\) nutzt dazu die Kostenmatrix \(K\) und die Datenmengen \(D_i\) und \(D_o\) der zuletzt verbundenen Hosts \(h \in H\) und gibt die Güte eines Dienstknotens an.
+\begin{IEEEeqnarray}{rCl}
+	\IEEEyesnumber\label{eqn:central_node_alg} \IEEEyessubnumber*
+	n &\in& N_{\text{Service}}, n \leq m\vspace*{5mm}\\
+	g(n) &=& \sum_{h \in H} D_{i_h} \times K_{hn} + D_{o_h} \times K_{nh}\vspace*{2mm}\\
+	R &=& \left\{\left(n_j, g(n_j)\right)_{j \in \{1,...,\left|N_{\text{Service}}\right|\}} \, \middle| \, g(n_j) > g(n_{j+1}) \right\} %\forall n_j \in N_{\text{Service}} \colon 
+\end{IEEEeqnarray}
+Die Kostenmatrix könnte in einem großen \gls{IoT} nicht erstellt werden, da sie bei jedem Hinzufügen eines neuen Objektes um \(2 \times n\) weitere Elemente steigen würde.
+Die Verwendung der Kostenmatrix ist auch nur bedingt notwendig, denn es beschleunigt lediglich die Analyse, die je nach topologischen Verfahren anders vonstatten geht (vgl.~Kapitel~\ref{sec:topologische_verfahren_der_migration}).
+
+\subsection{Network Utilization Inspector}
+\label{sub:entwurfsmuster_und_architektur_network_utilization_inspector}
+Der Network Utilization Inspector bildet das Grundgerüst des Funktionsbereiches der Migration (vgl.~Abbildung~\ref{fig:service_manager_hauptfunktion}).
+Wird ein Dienst vom Service Manager ausgeführt, startet der Network Utilization Inspector einen wiederholenden \gls{Timer} mit der in der Konfiguration angegebenen Migrationszykluszeit.
+Die Überlegungen zur Verwendung eines zyklischen Migrationsprozesses entstammt aus den in Kapitel~\ref{sec:topologische_verfahren_der_migration} vorgestellten topologischen Verfahren der Migration.
+Alle während der Netzwerkanalyse vom Netzwork Sniffer gewonnenen Daten werden innerhalb des Migrationszyklus im Network Utilization Inspector protokolliert und zu allen verbundenen Clients die ein- und ausgehende Datenmengen zugeordnet und gespeichert, da diese für die nachstehenden Berechnungen relevant sind.
+%\begin{figure}[htb]
+%	\centering
+%	\begin{tikzpicture}
+%	\fill[even odd rule,mymagenta] circle (1.8);
+%	
+%	\node at (0,0) [
+%	color = white,
+%	align = center
+%	] (textnode) {
+%		Migrations-\\
+%		zyklus
+%	};
+%	\arcarrow{ 342-5}{  270+5}{}
+%	\arcarrow{ 270-5}{  198+5}{}
+%	\arcarrow{ 198-5}{  126+5}{}
+%	\arcarrow{ 126-5}{  54+5}{}
+%	\arcarrow{ 54-5}{  -18+5}{}
+%	
+%	\node [text width=2cm, align=center] at ([yshift=85]textnode.center) {Migration};
+%	\node [text width=2cm, align=center] at ([xshift=80, yshift=30]textnode.center) {Netzwerkanalyse};
+%	\node [text width=5cm, align=center] at ([xshift=45, yshift=-75]textnode.center) {Berechnung des besten Standortes};
+%	\node [text width=5cm, align=center] at ([xshift=-45, yshift=-75]textnode.center) {Entscheidungsfindung};
+%	\node [text width=5cm, align=center] at ([xshift=-80, yshift=30]textnode.center) {Dienst\\migrieren};  
+%	
+%	\end{tikzpicture}
+%
+%\caption[Komponentenarchitektur des Service Managers]{Komponentenarchitektur des Service Managers \textcolor{red}{Beschreibung und auch hier die pfeile erklären...da die unten nicht erklärt sind im text}}
+%\label{fig:label}
+%\end{figure}
+Nach Ablauf der Migrationszykluszeit wird ein Ereignis des wiederholenden \glsmgen{Timer} ausgelöst.
+Der Network Utilization Inspector lässt sich von einer Funktion des Network Routers aus den gespeicherten Netzwerkdaten eine Rangliste \(R\) der bekannten Objekte im \gls{IoT} berechnen, die am besten zum Ausführen des Dienstes geeignet sind.
+Konnten in dem Zyklus keine Netzwerkdaten gefunden und keine Rangliste aufgebaut werden -- es gab also keine Anfragen von Clients an den Dienst -- wird dies dem Service Manager Core mitgeteilt.
+Wurde jedoch eine Rangliste erstellt und das beste Objekt in der Rangliste ist ein anderes Objekt im \gls{IoT} als der bisherige, wird zusätzlich noch die in der Konfiguration angegebene Migrationsschwelle überprüft.
+Bei der Überprüfung werden die Gütewerte der möglichen dienstausführenden Objekte aus der Rangliste \(R\) mit dem Gütewert des bisherigen dienstausführenden Objektes verglichen, die ebenfalls in der Rangliste \(R\) stehen.
+Alle dienstausführenden Objekte, deren Gütewerte außerhalb der prozentualen Migrationsschwelle liegen und somit besser als neue dienstausführende Objekte geeignet sind, werden als mögliche neue Kandidaten zur Ausführung des Dienstes in Betracht gezogen.
+Die Migrationsschwelle gilt in erster Linie der Kompensation einer ständigen Fluktuation des ausführenden Dienstknotens nach jedem Migrationszyklus.
+Haben zwei Knoten eine fast identische Güte, wird ein Wechsel somit unterbunden.
+Anhand anderer Leistungsmetriken, die die Auslastung einer Ressource beschreiben, könnte der Network Utilization Inspector zu diesem Zeitpunkt auch eine Duplikation anstelle einer Migration des Dienstes im Service Manager Core auslösen, wenn beispielsweise eine hohe Prozessorlast oder eine hohe Speicherlast im Objekt vorliegen.
+Wie in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} jedoch beschrieben ist, kann dies in einem virtuellen Netzwerk nicht simuliert werden, weshalb diese Funktion nur vorbereitend im Service Manager enthalten ist.
+Die Informationen zur Migration oder Duplikation sendet der Network Utilization Inspector schließlich durch Auslösung eines Ereignisses im Service Manager Core weiter.
+
+\subsection{Service Transporter}
+\label{sub:entwurfsmuster_und_architektur_service_transporter}
+Für eine erfolgreiche Migration eines Dienstes ist der Service Transporter zuständig.
+Über ein internes auf \gls{TCP} aufsetzendes Protokoll sichert er die Migration eines Dienstes auf ein anderes Objekt im \gls{IoT} und somit den Erhalt aller für den Dienst notwendigen Daten ab.
+Das Protokoll einer erfolgreichen Migration eines Dienstes im \gls{IoT} mit der Behandlung aller möglichen Ausnahmen ist in Abbildung~\ref{fig:sequenzdiagramm_komplett_service_transporter} illustriert.
+Zum einen wird durch das Protokoll unterbunden, dass ein Service Manager sich unnötigerweise zu einem Knoten migriert, wenn dieser bereits eine Dienstinstanz ausführt.
+Dieser Fall kann eintreten, falls in einem vorherigen Migrationszyklus bereits eine Duplikation stattfand.
+\\
+Zum anderen werden durch das Protokoll die möglichen Fehlerfälle jedes einzelnen Schritts gesondert abgefangen.
+Da die Verbindungen bei der Übertragung in einem kabellosen Netzwerk sehr instabil sind, können in jedem Schritt Timeouts und einhergehende Verbindungsverluste auftreten.
+Auch könnten während der Übertragung mehrerer Dateien Timeouts entstehen, sodass eine Löschung der vorherigen Daten oder eine Neuübertragung der restlichen Daten veranlasst werden muss.
+Timeouts behandelt der Service Transporter an diesen Stellen immer mit einem Wert über 60~s, sodass das \gls{TCP}-Protokoll die Möglichkeit einer erneuten Übertragung hat, bevor der Service~Transporter abbricht~\citep{rfc6298}.
+
+\subsection{Service Handler}
+\label{sub:entwurfsmuster_und_architektur_service_handler}
+Der Service Handler ist die Schnittstelle zum eigentlichen Dienst.
+Er verarbeitet alle direkten Interaktionen mit dem auszuführenden Dienst im \gls{IoT} und den zugrundeliegenden Dateien des Dienstes auf dem Objekt.
+Vom Service Manager Core beauftragt, startet und stoppt der Service Handler den Dienst innerhalb der gleichen Prozessgruppe in einem separaten Subprozess wie der Service Manager.
+In Fehlerfällen kann der Service Handler die lokalen Dateien des Dienstes löschen.
+\\
+Bei einer Veränderung der Dienstinstanz macht der Service Handler dies als Dienstsignalisierung mittels Broadcast über \gls{UDP} den Clients im \gls{IoT} bekannt.
+Übermittelt wird in diesen Fällen der Name des Netzwerkdienstes, eine im \gls{IoT} eindeutige Service-Instanz ID und das aufgetretene Ereignis, ob der Netzwerkdienst gestartet oder gestoppt wurde.
+%\textcolor{red}{Shadow Copy...? vertielte systeme usw}
+Die im \gls{IoT} eindeutige Service-Instanz ID wird vor einer Migration durch den Service Transporter jeweils inkrementiert und hilft den Clients beim Erhalt der asynchronen Broadcasts für eine eindeutige Zuordnung der laufenden Service-Instanz.
+Sie wird zusammen mit dem aktuellen Instanzstatus und den Netzwerkdienstport als Konfiguration im Service Handler gespeichert.
+\\
+Aufgrund hoher Verluste im verlustbehafteten Netzwerk scheitern viele verbindungslose Nachrichtenübermittlungen, wie die der Broadcast-Nachrichten der Dienstsignalisierung, sodass diese nicht alle Objekte erreichen.
+Fehlt den Objekten die Information einer stattgefundenen Migration, versuchen sie weiterhin Verbindungen zum alten dienstausführenden Objekt aufzubauen, die schließlich fehlschlagen.
+Aus diesem Grund reagiert der Service Handler auch auf sogenannte \inlinecode{who\_is}-Anfragen, die die Objekte im \gls{IoT} über Broadcast-Nachrichten senden können, falls ihnen keine aktive Dienstinstanz bekannt ist.
+Die Clients sollen diese Nachricht senden, wenn sie bei einem versuchten Verbindungsaufbau keine Antwort vom Dienst erhalten und schließlich Timeouts auftreten.
+Dieser Timeout soll im Client als ein \textit{Fehlversuch} gewertet werden.
+Bevor weitere Verbindungsversuche unternommen oder verbindungslose Nachrichten an den Dienst übermittelt werden, sollen die Clients auf eine eingehende \inlinecode{who\_is\_answer}-Nachricht warten.
+Erhalten sie diese nicht innerhalb von 30~Sekunden, soll dieser Prozess ebenfalls als ein Fehlversuch gewertet und eine neue \inlinecode{who\_is}-Broadcast gesendet werden.
+Nach maximal zehn~Fehlversuchen sollen die Clients mit dem Nachrichtenversand abbrechen.
+
+%Service Port
+%Anfrage durch Client an Service weiterleiten / Funktion ausführen
+%Migration: Wenn Service nicht mehr vorhanden, abweisen mit Verweis auf neue IP
+%Duplikation: Wenn zu viele Anfragen, abweisen mit Verweis auf alternative IP
+
+%-> Wie werden Anfragen geregelt bei geschlossenem Service?

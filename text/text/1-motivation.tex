@@ -1,0 +1,88 @@
+%!TEX root = ../main.tex
+\chapter{Motivation}
+\label{cha:motivation}
+Das \gls{IoT} gilt als einer der nächsten großen Schritte der digitalen Vernetzung, das von der \gls{ITU} sogar als die \glqq Infrastruktur der Informationsgesellschaft\grqq{} bezeichnet wird~\citep{ituY4000}.
+%Doch eine eindeutige Definition des Begriffes \gls{IoT} existiert dabei nicht.
+%Die allgemeine Grundidee hinter dem \gls{IoT} lässt sich dadurch beschreiben, dass den 
+Physikalischen Objekten, wie \gls{RFID}-Tags, Sensoren, Aktoren und smarten Geräten soll das Sehen, Hören, Denken und Ausführen von Aufgaben durch eine eindeutige Adressierung und gemeinsame Kommunikation ermöglicht werden, bei der sie Informationen teilen und darauf basierende Entscheidungen für ein gemeinsames Ziel treffen können~\citep{atzori2010internet, al2015internet}.
+Gegenüber dieser Heterogenität, bei der die verschiedensten physikalischen Objekte miteinander kommunizieren, besteht das derzeitige Internet eher aus einheitlichen Geräten, die mit wenigen Ausnahmen gleiche Eigenschaften besitzen und für denselben Anwendungszwecke geschaffen sind~\citep{bassi2008internet}.
+Aus technischer Perspektive gelingt der vollständige Übergang vom Internet zum \gls{IoT} nur durch die Vereinigung von Technologien, die sich ausgehend von eingebetteten Systemen mit einer allgegenwärtigen Berechnungsfähigkeit, über Sensornetzwerken und Kommunikationstechnologien bis hin zu den Internetprotokollen und -applikationen spannt~\citep{al2015internet}.
+%Allgemein Definition: giusto2010internet
+Das weltweit vernetzte Internet, wie wir es heute kennen, wird in diesem Szenario jedoch nicht vollständig verschwinden.
+Da die physikalischen Objekte im \gls{IoT} anhand ihrer geringen Ressourcen sowohl bei Rechenleistung als auch bei der Energieverfügbarkeit charakterisiert werden können~\citep{giusto2010internet}, bleibt das Internet mit seiner entscheidenden Rolle als globales Rückgrat für einen weltweiten Informationsaustausch erhalten und verbindet so die physikalischen Objekte mit seiner verfügbaren Rechenleistung und Kommunikationsfähigkeit über die gesamte Bandbreite von Technologien und Anwendungen~\citep{miorandi2012internet}.
+\\
+Die Anwendungsmöglichkeiten auf Basis des \glsmgen{IoT} sind außergewöhnlich vielseitig.
+Das Spektrum erstreckt sich über die verschiedensten Wirtschaftssektoren, von Transport und Logistik, über den Gesundheits- und Sicherheitssektor bis hin zu automatisierten Umgebungen, wie \glqq Smart Homes\grqq, \glqq Smart Grids\grqq{} oder \glqq Smart Cities\grqq{}~\citep{atzori2010internet}.
+Im Transport sind die Fahrzeuge mit Sensoren, Aktoren und Prozessorleistung ausgestattet, die kollaborativ mit den vernetzten Sensoren der Infrastruktur den Verkehr regeln, optimieren und über ein Verkehrsleitsystem überwachen. 
+Echtzeitinformationen geben Auskunft über die Waren während der gesamten Lieferkette und optimieren so die Logistik.
+Die Objekte im \gls{IoT} zeigen im Gesundheitssektor durch bessere Präventions- und  Diagnosemöglichkeiten von Krankheiten eine stetige Besserung der Lebensumstände, während im Krankenhaus durch eine kontinuierliche Überwachung der Patienten mithilfe von Sensoren die Behandlungen verbessert werden~\citep{wu2011m2m}.
+Zuletzt sind in \glqq smarten\grqq{} Umgebung weitere Anwendungen zu finden.
+In \glqq Smart Homes\grqq{} können anhand genauer Vorhersagen Aktionen ausgeführt werden, wie das automatische Schließen von Fenstern bei Wetterumbrüchen oder das Melden von Einbrüchen.
+\glqq Smart Grids\grqq{} erlauben beispielsweise durch \glqq Smart Meter\grqq{} eine effiziente Überwachung und anschließende Minimierung des Energie- und Ressourcenverbrauch~\citep{al2015internet,bsi2015smart}.
+Vernetzten Städten können schließlich übergreifende Informationen zur Verbesserung der Lebensqualität und öffentlichen Sicherheit bereitzustellen~\citep{al2015internet, wu2011m2m}.
+\\
+Diese Anwendungen spiegelt die gewaltige Größe des \glsmgen{IoT} wider, das sich derzeit sowohl geografisch als auch in die verschiedenen Wirtschaftssektoren segmentieren lässt.
+Jahr für Jahr steigt die Anzahl der sich mit dem Internet verbindenden physikalischen Objekte unvergleichlich rasant an~\citep{al2015internet}.
+Schätzungen des Marktforschungsunternehmen \citeauthor{gartner2014transform} zufolge werden bis um Jahr 2020 bereits insgesamt 26~Milliarden Objekte in das \gls{IoT} eingebunden sein~\citep{gartner2014transform}.
+Laut den Analysen von \citeauthor{cisco2016zettabyte} bedeutet dies, dass die Verbindungen von \gls{M2M} zwischen diesen Objekten zu dem Zeitpunkt 46\% aller weltweiten Verbindungen im Internet ausmachen werden~\citep{cisco2016zettabyte}.
+Dies stellt das gesamte System vor eine große Herausforderung, denn die physikalischen Objekte im \gls{IoT} erzeugen eine ungeheure Datenmenge, die sowohl gespeichert, verarbeitet als auch ohne Probleme in einer effizienten und einfachen Form präsentiert werden können muss~\citep{gubbi2013internet}.
+\\
+Die durch all diese physikalischen Objekte im \gls{IoT} generierten Daten werden in ihrer Gesamtheit als \textit{\glqq Big Data\grqq{}} bezeichnet.
+Diese Datenmenge ist für die Verarbeitung in normalen Hardwareumgebungen und Softwareprogrammen der Anwender jedoch zu groß, sodass sich neue Technologien unter dem Begriff \textit{\glqq Cloud Computing\grqq{}} etabliert haben, bei denen Anwendungssoftware, Entwicklungswerkzeuge, Rechenleistung und auch Speicherkapazitäten als Dienstleistungen in Rechenzentren über das Internet angeboten werden~\citep{armbrust2010view}.
+Zu den klassischen Dienstleistungen innerhalb des Cloud Computings zählen die \gls{SaaS}, \gls{PaaS} und \gls{IaaS}~\citep{mell2011nist}.
+%Eine Erweiterung zu klassischen Dienstleistungen innerhalb des Cloud Computings, wie \gls{IaaS}, ermöglicht unter dem Begriff \gls{DICaaS} die Analyse großer Datenmengen im Petabyte-Bereich, wie die Daten der Objekte im \gls{IoT}, als Dienstleistung in einer zentralen \gls{Cloud}-Infrastruktur.
+Für die Datenverarbeitung der Objekte im \gls{IoT} können Kunden mittels \gls{IaaS} sowohl die Speicher- als auch Rechenkapazitäten für ihre Produkte von externen \gls{Cloud}-Anbietern mieten.
+Diese garantieren dafür die kontinuierliche Bereitstellung und Wartung der benötigten Infrastruktur, ohne dass sich die Kunden um die \gls{Cloud}-Infrastruktur kümmern müssen~\citep{al2015internet, mell2011nist}.
+Doch zeichnet sich mit der \gls{Cloud} ein für das \gls{IoT} sehr zentrales und statisches Modell ab, durch das Komplikationen entstehen.
+Allein die bloße Datenmenge der Objekte im immer weiter wachsenden \gls{IoT} mit ihren heterogenen Datentypen bereitet große Probleme für die Analysemethoden~\citep{jagadish2014big}.
+Darüber hinaus benötigt das \gls{IoT} neben der Mobilität und geografischen Verteilung der Objekte zusätzlich Standortkenntnis über die Objekte, sodass schließlich eine Reduktion von Latenzen und Steigerung der \gls{QoS} erreicht werden kann~\citep{bonomi2012fog,stojmenovic2014fog}.
+\\
+Diese Anforderungen können durch eine neue, verteilte Plattform namens \textit{\glqq \gls{Fog Computing}\grqq{}} erfüllt werden, die als eine Art Brücke zwischen den heterogenen Objekten und dem traditionellen \gls{Cloud} Computing agiert~\citep{al2015internet}.
+Im \gls{Fog Computing} werden die benötigten Dienste nicht in einer zentralen \gls{Cloud}-Infrastruktur bereitgestellt, sondern auf verteilten, heterogenen Geräten der neuen Fog-Infrastruktur, die sich von in der physischen Nähe zum \gls{IoT} befindlichen Gateways, \glqq Edge\grqq-Routern und Switches bis in zu den Objekten des \glsmgen{IoT} erstreckt.
+Durch diese verteile Verarbeitung am \glqq Rande des Netzwerks\grqq{} (engl. \glqq Edge of the Network\grqq{}) können Dienste so nah an den datenerzeugenden Sensoren und steuerbaren Aktoren arbeiten wie nur möglich~\citep{stojmenovic2014fog}.
+Als potentielle Kandidaten für die Bereitstellung solcher Dienste kommen beispielsweise die Mobilfunkbetreiber mit ihren bereits vorhandenen Netzwerken oder sogar innerhalb der einzelnen Funkzellen in Betracht~\citep{al2015internet}.
+Eine Alternative zu diesem Szenario wäre die Bereitstellung der Dienste auf den Objekten im \gls{IoT} selber, bei der die Dienste zwischen den Objekten migriert werden.
+Ähnlich wie die \gls{Cloud}, stellt die Fog Daten, Rechenleistung, Speicher und Anwendungsdienste den Endbenutzern bereit~\citep{cisco2015fog}.
+Dabei ersetzt das \gls{Fog Computing} allerdings nicht die \gls{Cloud}, vielmehr erweitert es deren Aufgabenbereiche durch die Abbildung neuer Anwendungen und Dienste auf den Edge-Geräten, die schließlich ein Zusammenspiel zwischen \gls{Cloud} und Fog ermöglichen~\citep{bonomi2014fog}.
+Die \gls{Cloud} bleibt mit ihrer im Vergleich zur Fog großen Rechenleistung, Speicher- und Kommunikationskapazität weiterhin erhalten~\citep{al2015internet,bonomi2012fog}.
+So ergeben sich für das \gls{IoT} neue Möglichkeiten.
+Neben der Reduktion von Latenzzeiten und dem einhergehendem Potential zu Echtzeitdiensten durch die geografische Verteilung ist es im \gls{IoT} nun durch die Bildung von kleinen \glqq Mikro-Fogs\grqq{} möglich, die Dichte der Objekte weiter zu erhöhen und dabei weiterhin ein skalierbares System beizubehalten.
+Durch diese Mikro-Fogs werden die Dienste mit limitierter Rechenleistung, Speicher- und Kommunikationskapazitäten so verteilt angeboten, dass die Kosten auf einen Bruchteil von denen der \gls{Cloud}-Datenzentren minimiert werden können~\citep{al2015internet}.
+Wird außerdem die Bereitstellung der Dienste in einer privaten Umgebung angeboten, können zusätzliche sicherheitsrelevante Aspekte Beachtung finden, sodass schließlich ein Maß an Datenschutz durch Zugriffskontrollen ermöglicht wird, bevor die Daten in die externe \gls{Cloud}-Infrastruktur gelangen~\citep{lehmkuhl2017personalcloud}.
+\\ 
+Das Ziel dieser Masterarbeit ist die Entwicklung einer Plattform, die eine automatische Migration der Dienste in die physische Nähe der Objekte umsetzt, um Latenzzeiten zu minimieren.
+Dazu soll zunächst die möglichen Dienste und ihre Merkmale analysiert werden, die sich für die Bereitstellung und Migration innerhalb des \glsmgen{IoT} eignen.
+Für eine optimale Positionierung zur Minimierung von Latenzzeiten sollen bewertbare Systemeigenschaften und passende Aufnahmemöglichkeiten verwendet werden, die Teil einer weiteren Untersuchung sind.
+Diese stellen schließlich benötigte Daten für die Plattform zur Positionierung der Dienste bereit, mit der in einer abschließenden Evaluation herausgefunden werden soll, in welchen Bereichen des \glsmgen{IoT} und auf welchen Geräten die besten Resultate im Bezug auf Latenzzeiten und weiteren Leistungsmetriken zwischen den Objekten im \gls{IoT} und den Diensten für das \gls{Fog Computing} geliefert werden können.
+%In diesem Zusammenhang stellen sich jedoch mehrere Fragen, die es in dieser Masterarbeit zu beantwortet gilt.
+%Zunächst gilt es zu überprüfen welche Dienste in einem System, wie das \gls{Fog Computing}, angeboten werden können.
+%Dabei soll auch eine Untersuchung ihrer Merkmalen vorgenommen werden und ob sie sich anhand dessen in verschiedene Kategorien einsortieren lassen.
+%
+%Dies bringt jedoch einige Risiken mit sich, denn in den segmentierten Mikro-Fogs des \glsmgen{IoT} müssten die Dienste anhand bewertbarer Systemeigenschaften strategisch optimal positionieren werden.
+%Diese bewertbaren Systemeigenschaften und passende Aufnahmemöglichkeiten sind Teil einer weiteren Untersuchung, die schließlich die wichtigen Daten für eine Plattform zur Positionierung der Dienste bereitstellen.
+%Abgeschlossen werden die Untersuchungen mit einer Evaluation des gesamten Systems, das sich von Diensten über die bewertbaren Systemeigenschaften bis hin zu der Plattform erstreckt.
+%fog soll bei den isps laufen
+%-> meinungen gehen auseinander
+%->es ist zu prüfen wo am besten fogging betrieben wird
+%-> gateway
+%-> beim ISP
+%-> im netzwerk durch migration?
+%-> dazu migration durch netzwerk
+%->im fazit wieder aufgreifen
+%
+%Markierungen in 2010 - From today's intranet of things to a future internet of things.pdf beachten
+%-> privacy
+%
+%\(https://www.cisco.com/c/dam/en_us/solutions/trends/iot/docs/computing-overview.pdf\)
+%
+%
+%Plattform
+%-> migration findet anhand von topolischen charakteristika statt
+%
+%Evaluation
+%
+%-> andere services werden angeboten -> was muss zusätzlich beachtet werden?
+%
+%Anforderungen wie Fettweis <> Tactile Internet
+%
+%objekt <> knoten <> node <> Host <> usw..

@@ -1,0 +1,224 @@
+\RequirePackage{pgfplots}
+\RequirePackage{tikz}
+
+\RequirePackage[underline=true,rounded corners=false]{pgf-umlsd}
+\RequirePackage{pgfplotstable}
+
+\usepgflibrary{arrows}
+\usetikzlibrary{positioning,shapes,fit,shapes.geometric,shapes.symbols,shapes.arrows,arrows,decorations.markings,decorations.text,calc,matrix}
+\usetikzlibrary{arrows.meta}
+\usepgfplotslibrary{statistics}
+\usetikzlibrary{pgfplots.statistics}
+\pgfplotsset{compat = newest}
+
+\makeatletter \newcommand{\pgfplotsdrawaxis}{\pgfplots@draw@axis}
+\makeatother
+
+
+\tikzset{
+    iot node/.style={circle,draw,thick,minimum size=2mm,
+                     inner sep=0pt,outer sep=0pt,fill=green!10
+    },
+    iot cloud/.style={cloud, cloud puffs=9.5, minimum height=2cm,
+                      minimum width=3cm, draw, thick
+    },
+    database node/.style={cylinder,draw=black,thick,aspect=0.7,
+                          minimum height=0.55cm,minimum width=0.5cm,shape border rotate=90,cylinder uses custom fill, cylinder body fill=red!30,cylinder end fill=red!10
+    },
+    gateway node/.style={rectangle,draw,thick,minimum width=3mm,
+                         minimum height=3mm,fill=blue!10
+    }
+}
+
+
+
+
+\pgfplotsset{y axis percentage style/.style={
+    yticklabel = \pgfmathprintnumber{\tick}\,\%,
+    y axis line style = {-},
+    x axis line style = {-},
+    ymax=100,
+    ytick={0,10,...,100},
+  }
+}
+
+\pgfplotsset{x axis large text label/.style={
+    x tick label style={rotate=45, align=right, anchor=north east},
+    x label style={at={(0.5,-0.425)}},
+    legend style={at={(0.5,-0.525)}},
+  }
+}
+
+\pgfplotsset{global chart style/.style={
+    axis lines=left,
+    %enlarge x limits=.1,
+    axis line style=transparent,
+    ticklabel style=transparent,
+    tick style=transparent,
+    axis on top=false,
+    after end axis/.append code={
+        \pgfplotsset{
+            axis line style=opaque,
+            ticklabel style=opaque,
+            tick style=opaque,
+            grid=none
+        }
+        \pgfplotsdrawaxis
+    },  
+    width=0.95\textwidth,
+    grid=major,
+    %major x tick style = transparent,
+    grid style={dashed,gray!30},
+    xmajorgrids = false,
+    %ybar=2*\pgflinewidth,
+    %bar width=8pt,
+    ymin=0,
+    tick pos=left,
+    ylabel style={align=center},
+    xlabel style={align=center},
+    %legend style={draw=none,fill=none,nodes={inner sep=3pt}},
+    legend style={
+        at={(0.5,-0.2)},%(0.975,0.975)
+        legend columns=-1,
+        anchor=north,
+        draw=none,
+        fill=none,
+        %legend cell align=left,
+        /tikz/every even column/.append style={column sep=0.3cm}
+    },
+  }
+}
+
+\pgfplotsset{grouped bar chart style/.style={
+    global chart style,
+    height=10cm,
+    enlarge x limits=.1,
+    major x tick style = transparent,
+    x label style={at={(0.5,-0.1)}},
+    xtick=data,
+    ybar=2*\pgflinewidth,
+    bar width=8pt,
+    legend cell align={left},
+    legend style={
+        legend columns=2,
+    }
+  }
+}
+
+\pgfplotsset{boxplot chart style/.style={
+    global chart style,
+    height=10cm,
+    enlarge x limits=.1,
+    boxplot/draw direction=y,
+    major x tick style = transparent,
+    x label style={at={(0.5,-0.1)}},
+    %ybar=2*\pgflinewidth,
+  }
+}
+
+\pgfplotsset{point cloud chart style/.style={
+    global chart style,
+    height=10cm,
+    %enlarge x limits=.1,
+    %major x tick style = transparent,
+    x label style={at={(0.5,-0.1)}},
+    %xtick=data,
+    ybar=2*\pgflinewidth,
+    bar width=8pt,
+  }
+}
+
+\pgfplotsset{
+    boxplot prepared from table/.code={
+        \def\tikz@plot@handler{\pgfplotsplothandlerboxplotprepared}%
+        \pgfplotsset{
+            /pgfplots/boxplot prepared from table/.cd,
+            #1,
+        }
+    },
+    /pgfplots/boxplot prepared from table/.cd,
+        table/.code={\pgfplotstablecopy{#1}\to\boxplot@datatable},
+        row/.initial=0,
+        make style readable from table/.style={
+            #1/.code={
+                \pgfplotstablegetelem{\pgfkeysvalueof{/pgfplots/boxplot prepared from table/row}}{##1}\of\boxplot@datatable
+                \pgfplotsset{boxplot/#1/.expand once={\pgfplotsretval}}
+            }
+        },
+        make style readable from table=lower whisker,
+        make style readable from table=upper whisker,
+        make style readable from table=lower quartile,
+        make style readable from table=upper quartile,
+        make style readable from table=median,
+        make style readable from table=lower notch,
+        make style readable from table=upper notch
+}
+
+\tikzset{
+  component symbol/.style={
+    alias=thisone,
+    append after command={
+        %([shift={(-2mm,-2mm)}]thisone.north east) edge[] +(-2mm, 0)
+        %([shift={(-4mm,-2mm)}]thisone.north east) edge[] +(0, -4mm)
+        node [
+            fill=white,
+            rectangle,
+            minimum width = 2mm,
+            minimum height = 3mm
+        ] at ([shift={(-3mm,-3mm)}]thisone.north east)
+        {}
+
+        node [
+            fill=white,
+            rectangle,
+            minimum width = 1.5mm,
+            minimum height = 0.5mm,
+            outer sep=0,
+            inner sep=0,
+        ] at ([shift={(-4mm,-2.5mm)}]thisone.north east)
+        {}
+
+        node [
+            fill=white,
+            rectangle,
+            minimum width = 1.5mm,
+            minimum height = 0.5mm,
+            outer sep=0,
+            inner sep=0,
+        ] at ([shift={(-4mm,-3.5mm)}]thisone.north east)
+        {}
+    }
+  }
+}
+
+%\tikzstyle{vecArrow} = [thick, decoration={markings,mark=at position
+%   1 with {\arrow[scale=2]{open triangle 60}}},
+%   double distance=5pt, shorten >= 10.5pt,
+%   rounded corners=25pt,
+%   preaction = {decorate},
+%   postaction = {draw, line width=3pt, white,shorten >= 20.5pt}]
+
+%\tikzstyle{innerWhite} = [semithick, white,line width=3pt, rounded corners=25pt, shorten >= 16.5pt]
+
+\tikzstyle{vecArrow} = [thick, decoration={markings,
+        mark=at position 0 with {\arrow[scale=2, rotate=180]{open triangle 60}},
+        mark=at position 1 with {\arrow[scale=2]{open triangle 60}}},
+    double distance=5pt, shorten >= 12.5pt, shorten <= 12.5pt,
+    rounded corners=15pt,
+    preaction = {decorate},
+    postaction = {draw,line width=5pt, white, shorten >= 11.5pt, shorten <= 11.5pt}]
+\tikzstyle{innerWhite} = [semithick, white,line width=5pt, rounded corners=15pt, shorten >= 11.5pt, shorten <= 11.5pt]
+
+\pgfdeclareverticalshading{shading1}{100bp}{
+  color(0bp)=(orange!30);
+  color(50bp)=(orange!30);
+  color(50bp)=(yellow!30);
+  color(100bp)=(yellow!30)
+}
+
+\pgfdeclareverticalshading{shading2}{100bp}{
+  color(0bp)=(purple!30);
+  color(50bp)=(purple!30);
+  color(50bp)=(yellow!30);
+  color(100bp)=(yellow!30)
+}

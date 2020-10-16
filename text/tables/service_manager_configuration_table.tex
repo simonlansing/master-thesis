@@ -1,0 +1,29 @@
+\documentclass[ngerman, 11pt]{standalone}
+\usepackage[ngerman]{babel} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{booktabs}
+\usepackage{tabularx}
+\pagenumbering{gobble}
+
+\usepackage{printlen}
+\begin{document}
+	\noindent
+	\begin{tabularx}{433.19327pt}{c|c|c|X}
+		\toprule
+		Parameter&Typ&Standardwert&Beschreibung\\
+		\midrule
+		-a&String&./adjacency\_list.json& Speicherort der Adjazenzliste.\\
+		-p&int&6001&Port des Service Transporters zur Übertragung des Services.\\
+		-s&String&./service.py&Speicherort des Services.\\
+		-r&Boolean&False&Angabe, ob der Service direkt gestartet werden soll.\\
+		-t&Boolean&False&Angabe, ob der Durchlauf ein Test ist.\\
+		-u&String&a& Liste nicht erreichbarer Hosts im Netzwerk.\\
+		-v&String&a& Liste der möglichen Serverhosts.\\
+		-m&Boolean&True&Angabe, ob der Service überhaupt migriert werden soll.\\
+		-c&int&30&Zeit zwischen zwei Migrationszyklen.\\
+		-g&float&2.0&Migrationsschwelle in Prozent [\%].\\
+		\bottomrule
+	\end{tabularx}
+\end{document}

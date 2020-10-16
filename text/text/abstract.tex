@@ -1,0 +1,120 @@
+%!TEX root = ../main.tex
+\chapter*{\abstractname}
+% delete german abstract when writing in english
+\section*{Zusammenfassung}
+Das Internet der Dinge umfasst bereits heute eine Vielzahl heterogener Objekte.
+%%%%%, die eine Interaktion mit der physikalischen Umgebung ermöglichen, eigenständig Entscheidungen koordinieren und Information untereinander austauschen.
+Aufgrund der geografischen Verteilung der Objekte, lässt sich das Internet der Dinge derzeit in viele einzelne Segmente unterteilen, zwischen denen die Kommunikation über Gateways und dem globalen Internet erfolgt.
+%
+Alle von den Objekten ausgetauschten Informationen und getroffenen Entscheidungen
+%%%%%im Internet der Dinge
+erzeugen Unmengen an Daten, die über Dienste des Cloud Computings in einer entfernten Cloud-Infrastruktur ausgewertet werden.
+%
+Durch die weite Verteilung und der immer weiter steigenden Anzahl heterogener Objekte im Internet der Dinge ist diese entfernte Cloud-Infrastruktur wegen hoher Latenzzeiten für Echtzeitdienste jedoch nicht geeignet.
+%
+Die Lösung dieser Probleme ist das \glqq Fog Computing\grqq, das eine verteilte Ausführung von Diensten dezentral in der physischen Nähe der Objekte ermöglichen soll.
+%
+Die physische Nähe ist dabei nicht definiert und erstreckt sich von den Gateways, über dedizierten Dienstobjekten bis hin zu allen anderen Objekten im Internet der Dinge.
+%
+%Das Internet der Dinge umfasst heute bereits eine große Anzahl heterogener Objekte von RFID-Tags, über Sensoren und Aktoren bis hin zu smarten Geräten.
+%Sie ermöglichen eine Interaktion mit der physikalischen Umgebung, koordinieren eigenständig Entscheidungen über eine M2M-Kommunikation und tauschen Informationen untereinander aus.
+%All die Vorgänge erzeugen Unmengen an Daten, die über Dienste des Cloud Computings in einer entfernten Cloud-Infrastruktur ausgewertet werden müssen.
+%Durch die weite Verteilung und der immer weiter steigende Anzahl heterogener Objekte im Internet der Dinge ist diese entfernte Cloud-Infrastruktur für einige Dienste jedoch nicht geeignet, hohe Latenzzeiten und eine geringe Standortflexibilität sind die Folge.
+%Die Lösung dieser Probleme ist das Fog Computing, das eine verteilte Ausführung von Diensten dezentral in der Nähe der Objekte des Internet der Dinge ermöglichen soll.
+\\
+Ziel dieser Masterarbeit ist die Entwicklung einer Plattform, die eine automatische Migration von Diensten in die physische Nähe der Objekte im Internet der Dinge umsetzt, um Latenzzeiten zu minimieren.
+%
+Dazu werden zunächst verschiedene Eigenschaften möglicher Dienste analysiert, die innerhalb des Internets der Dinge für das Fog Computing angeboten werden können.
+%
+Diese und weitere Untersuchungen zu bekannten topologischen Charakteristika bilden die Grundlage für die Bereitstellung der Dienste des Fog Computings.
+%
+Die Implementierung der Plattform erfolgt anhand der Anforderungen zur OpenFog-Architektur des OpenFog-Konsortiums sowie weiterer Anforderungen für Middlewares im Internet der Dinge.
+%
+Dabei wurde auf topologische Verfahren zur Aufnahme von Netzwerkdaten und Migration von Diensten aus früheren Untersuchungen zu Ad-Hoc-Netzwerken zurückgegriffen.
+%
+Neu ist bei der Plattform gegenüber den Technologien der Middlewares die unterstützte Autonomie der bereitgestellten Dienste.
+%
+Abschließend wird eine Evaluation durchgeführt, die durch den Vergleich verschiedener Positionen in einem segmentierten Internet der Dinge zeigt, dass Migrationen der Dienste innerhalb der Segmente
+%%%%% des Internets der Ding
+die besten Latenzzeiten bei der Bereitstellung gegenüber Diensten an Gateways oder in einer Cloud-Infrastruktur bieten.
+%
+Insgesamt kann so bestätigt werden, dass die Plattform für das Fog Computing durch die physische Nähe zwischen Diensten und Objekten die Latenzzeiten bei der Kommunikation verbessert.
+%
+%die Anpassung der physischen Distanzen zwischen Diensten und Objekten die Latenzzeiten bei der Kommunikation zwischen Diensten und Objekten  sukzessiv verbessert werden kann.
+%im Fog Computing
+%gegenüber Diensten an Gateways oder in einer Cloud-Infrastruktur
+Zusätzlich kann mit den Ergebnissen dieser Masterarbeit gezeigt werden, dass die Bereitstellung der Dienste weitere Verbesserungen in der Latenzzeit bietet, wenn sie verteilt innerhalb einzelner Segmente des Internets der Dinge erfolgt.
+%
+% gegenüber einer physikalisch getrennten Bereitstellung an externen Gateways zum Internet der Dinge vorweist.
+So wäre es in naher Zukunft bereits möglich allen Personen alle Objekte zu jeder Zeit zur Verfügung zu stellen.
+%Das bedeutet, das in der Zukunft allen Personen alle Objekte zu jeder Zeit zur Verfügung stehen könnten.
+
+
+%In dieser Masterarbeit werden zunächst die verschiedenen Eigenschaften und Anwendungen möglicher Dienste analysiert, die innerhalb des Internet der Dinge für das Fog Computings angeboten werden können.
+%Diese und weitere Untersuchungen zu bekannten topologischen Charakteristika und Verfahren bilden die Grundlage für die Bereitstellung der Dienste des Fog Computings.
+%Aufgrund der weiten Verteilung der Objekte soll die Bereitstellung stets an strategisch optimalen Standorten im Internet der Dinge erfolgen und nicht an fixierten Punkten.
+%Die erfordert eine Plattform, die eine Migration der Dienste zwischen allen bekannten Objekten im Internet der Dinge erlaubt.
+%Das ist die in dieser Arbeit für das Fog Computing implementierte Service~Manager~Plattform.
+%Die zuvor in den Analysen gewonnen Informationen fließen in diese Plattform ein und ermöglichen so eine ressourcenschonende Bereitstellung von Diensten, die zwischen den Objekten migriert werden können.
+%Dabei bewahrt sie stets die allgemeine Autonomie der Dienste, sodass keine Anpassungen der Dienste an sie notwendig sind.
+%Stellt die Plattform eine Inanspruchnahme des Dienstes von weit entfernten Objekten im Internet der Dinge fest, migriert sie den Dienst in die Nähe der Objekte zur Reduktion von Leistungsmetriken, wie die Latenzzeit.
+%Die in einer Emulationsumgebung durchgeführte Evaluation bestätigen die Vorteile der Migration im Internet der Dinge für das Fog Computing durch eine deutliche Verbesserung der Latenzzeit zwischen einem migrierenden Dienst und mit ihm kommunizierenden Objekten gegenüber der statischen Bereitstellung des Dienstes an fixierten Punkten, wie Edge-Gateways oder in einer Cloud-Infrastruktur.
+%Bei einer weiter steigenden Anzahl Objekte bietet sich schließlich die Bildung kleinerer \glqq Mikro-Fogs\grqq{} mit einer parallelen Bereitstellung autonomer Dienste an, die so das Potenzial des Fog Computings zur Latenzzeitminimierung weiter ausschöpfen.
+
+
+%Wird der autonomer Dienst zusätzlich immer in der physikalisch unmittelbaren Umgebung der interagierenden Objekte im \gls{IoT} bereitgestellt, werden die Übertragungswege weitestgehend minimiert.
+
+
+%Die Plattform zeigt die sinnvolle Anwendung des Fog Computings und die Vorteile der Migration bei der Bereitstellung verteilter, autonomer Dienste im Internet der Dinge.
+%IoT, Viele objekte
+%Erzeugen daten 
+%müssen ausgewertet werden
+%Cloud-Computing
+%Anzahl steigt in Milliarden
+%zu langsam für einige dienste
+%standort nahe
+%dezentrales fog computing
+%neue dienste
+%bereitstellung dieser dienste
+%topologische verfahren und charakteristika
+%service mananger platform
+%Bereitstellung der Dienste konnte in einer Emualtionsumgebung um Faktor 10 beschleunigt werden
+%Bildung von Mikro-Fogs sinnvoll?
+
+
+
+% always write an english abstract in addition to a german one
+\section*{Abstract}
+The todays Internet of Things already includes a multitude of heterogeneous objects.
+%
+Due to the geographic distribution of the objects, the Internet of Things is currently divided into many individual segments, which communicate via gateways and the global Internet.
+%
+All information exchanged and decisions taken by the objects generate vast amounts of data, which are evaluated via cloud computing services in a remote cloud infrastructure.
+%
+In consequence of the wide distribution and ever-increasing number of heterogeneous objects in the Internet of Things, this remote cloud infrastructure is not suitable for real-time services because of high latencies.
+%
+The solution to these problems is the ``fog computing'', which is designed to enable a distributed execution of services decentrally in the physical proximity of the objects.
+%
+The physical proximity is not defined and extends from the gateways, over dedicated service objects to all other objects in the Internet of Things.
+\\
+The goal of this master's thesis is the development of a platform that automatically migrates services to the physical proximity of objects in the Internet of Things to minimize latencies.
+%
+For this purpose, various characteristics of possible services are analyzed, which can be offered for the fog computing within the Internet of Things.
+%
+These and other studies on known topological characteristics form the basis for the provisioning of the services of fog computing.
+%
+The platform is implemented according to the specifications of the OpenFog architecture of the OpenFog Consortium and other requirements for middlewares on the Internet of Things.
+%
+In this case, topological procedures to record network data and to migrate services were used from previous investigations into ad-hoc networks.
+%
+A new feature compared to the technologies of middlwares is the supported autonomy of the provided services of the platform.
+%
+Finally, an evaluation is carried out by comparing different positions in a segmented Internet of Things.
+%
+It shows that migrations of the services provided within the segments offer the best latencies compared to services on the gateway or in a cloud infrastructure.
+%
+All in all, it can be confirmed that the platform for fog computing improves the latencies of communication by the physical proximity between services and objects.
+%
+In addition, the results of this master's thesis show that the provisioning of the services provides further improvements in the latency when dispersed within the individual segments of the Internet of Things.
+%
+This indicates, that all objects could be available to all persons at any time in the future.

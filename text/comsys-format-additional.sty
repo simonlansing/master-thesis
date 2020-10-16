@@ -1,0 +1,175 @@
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+\RequirePackage{float}
+\RequirePackage{calc}
+\RequirePackage{datatool}
+
+\usepackage[edges]{forest}
+
+\newcommand{\bigO}{\ensuremath{\mathcal{O}}}
+
+\usepackage{multirow}
+\usepackage{enumitem}
+
+%=============================================================================
+%Settings for fancy colors
+%=============================================================================
+\definecolor{folderbg}{RGB}{124,166,198}
+\definecolor{folderborder}{RGB}{110,144,169}
+\definecolor{bblue}{HTML}{4F81BD}
+\definecolor{rred}{HTML}{C0504D}
+\definecolor{ggreen}{HTML}{9BBB59}
+\definecolor{oorange}{HTML}{F79646}
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+%=============================================================================
+%Settings for fancy source code
+%=============================================================================
+\newcommand{\inlinecode}[1]{\lstinline[basicstyle=\ttfamily]{#1}}
+
+
+\lstdefinestyle{MyBash} {
+	language           = bash, 
+    backgroundcolor    = \color{gray!10},
+    aboveskip          = 20pt,
+    xleftmargin		   =.6cm,
+    belowskip          = 0pt,
+    basicstyle         = \ttfamily\scriptsize,
+    keywordstyle       = \bfseries\ttfamily\color{DarkBlue},
+    stringstyle        = \itshape\color{Black}\ttfamily,
+    commentstyle       = \color{Gray}\ttfamily,
+    identifierstyle    = \color{Black}\ttfamily,
+    captionpos         = b,
+    escapechar         = \%,
+	escapeinside={\%*}{\%*},
+	morekeywords={}, 
+    frame              = lines,
+	emph={...},
+	emphstyle=\color{red},
+    mathescape         = false,
+    numbers            = left,
+    numberfirstline    = false,
+    firstnumber        = 1,
+    stepnumber         = 1,
+    showstringspaces   = false,
+    tabsize            = 2,    
+	showspaces=false,   
+	showstringspaces=false,
+	showtabs=false, 
+	breaklines=true, 
+	numbers=left,                   
+	numberstyle=\scriptsize,  
+%	caption={\protect\filename@parse{\lstname}\protect\filename@base\text{.}\protect‌​\filename@ext}
+} 
+
+\lstdefinestyle{MyPython} {
+    language           = python, 
+    backgroundcolor    = \color{gray!10},
+    aboveskip          = 20pt,
+    xleftmargin        =.6cm,
+    belowskip          = 0pt,
+    basicstyle         = \ttfamily\scriptsize,
+    keywordstyle       = \bfseries\ttfamily\color{DarkBlue},
+    stringstyle        = \itshape\color{Black}\ttfamily,
+    commentstyle       = \color{Gray}\ttfamily,
+    identifierstyle    = \color{Black}\ttfamily,
+    captionpos         = b,
+    escapechar         = \%,
+    escapeinside={\%*}{\%*},
+    morekeywords={}, 
+    frame              = lines,
+    emph={...},
+    emphstyle=\color{red},
+    mathescape         = false,
+    numbers            = left,
+    numberfirstline    = false,
+    firstnumber        = 1,
+    stepnumber         = 1,
+    showstringspaces   = false,
+    tabsize            = 2,    
+    showspaces=false,   
+    showstringspaces=false,
+    showtabs=false, 
+    breaklines=true, 
+    breakatwhitespace=true,
+    numbers=left,                   
+    numberstyle=\scriptsize, 
+    postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow\space}} 
+%   caption={\protect\filename@parse{\lstname}\protect\filename@base\text{.}\protect‌​\filename@ext}
+} 
+
+\lstdefinelanguage{MyJSON} {
+    backgroundcolor    = \color{gray!10},
+    aboveskip          = 20pt,
+    xleftmargin        =.6cm,
+    belowskip          = 0pt,
+    basicstyle         = \ttfamily\scriptsize,
+    keywordstyle       = \bfseries\ttfamily\color{DarkBlue},
+    stringstyle        = \itshape\color{Black}\ttfamily,
+    commentstyle       = \color{Gray}\ttfamily,
+    identifierstyle    = \color{Black}\ttfamily,
+    captionpos         = b,
+    escapechar         = \%,
+    escapeinside={\%*}{\%*},
+    morekeywords={}, 
+    frame              = lines,
+    emph={...},
+    emphstyle=\color{red},
+    mathescape         = false,
+    numbers            = left,
+    numberfirstline    = false,
+    firstnumber        = 1,
+    stepnumber         = 1,
+    showstringspaces   = false,
+    tabsize            = 2,    
+    showspaces=false,   
+    showstringspaces=false,
+    showtabs=false, 
+    breaklines=true, 
+    numbers=left,                   
+    numberstyle=\scriptsize,  
+%   caption={\protect\filename@parse{\lstname}\protect\filename@base\text{.}\protect‌​\filename@ext}
+} 
+
+\newlength\Size
+\setlength\Size{4pt}
+\tikzset{%
+    folder/.pic={%
+        \filldraw [draw=folderborder, top color=folderbg!50, bottom color=folderbg] (-1.05*\Size,0.2\Size+5pt) rectangle ++(.75*\Size,-0.2\Size-5pt);
+        \filldraw [draw=folderborder, top color=folderbg!50, bottom color=folderbg] (-1.15*\Size,-\Size) rectangle (1.15*\Size,\Size);
+    },
+    file/.pic={%
+        \filldraw [draw=folderborder, top color=folderbg!5, bottom color=folderbg!10] (-\Size,.4*\Size+5pt) coordinate (a) |- (\Size,-1.2*\Size) coordinate (b) -- ++(0,1.6*\Size) coordinate (c) -- ++(-5pt,5pt) coordinate (d) -- cycle (d) |- (c) ;
+    },
+    desc/.pic={%
+    },
+}
+\forestset{%
+    declare autowrapped toks={pic me}{},
+    pic dir tree/.style={%
+        for tree={%
+            folder,
+            grow'=0,
+        },
+        before typesetting nodes={%
+            for tree={%
+                edge label+/.option={pic me},
+            },
+        },
+    },
+    pic me set/.code n args=2{%
+        \forestset{%
+            #1/.style={%
+                inner xsep=2\Size,      
+                pic me={pic {#2}}
+            }
+        }
+    },
+    pic me set={directory}{folder},
+    pic me set={file}{file},
+    pic me set={desc}{desc},
+}

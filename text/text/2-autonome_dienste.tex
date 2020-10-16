@@ -1,0 +1,402 @@
+%!TEX root = ../main.tex
+\chapter{Die Migration der autonomen Dienste}
+\label{cha:autonome_dienste}
+%\textcolor{red}{Diese Anwendungsapplikationen werden meist über externe Platformen angeboten...}
+%\textcolor{red}{Objekte beschreiben}
+Die Grundlage all der in Kapitel~\ref{cha:motivation} genannten Anwendungen wird auf der untersten Ebene durch die einzelnen Objekte innerhalb des \glsmgen{IoT} gebildet.
+Sie führen Aufgaben aus, die sowohl durch Sensoren auf äußere Einflüsse reagieren als auch proaktiv tätig werden können.
+Der entscheidende Faktor hier ist die Vernetzung untereinander mittels einer direkten \gls{M2M}-Kommunikation, die schließlich alle Objekte kollaborativ arbeiten lässt und die Grundlage für die Anbindung der Anwendungsapplikationen an das vernetzte \gls{IoT} bildet.
+%\citep{nicht sinnig ohne wirklichen Textausschnitt: wu2011m2m}.
+Bei dieser Vernetzung der Objekte im \gls{IoT} und der gemeinsamen Verarbeitung von Informationen entstehen Aufgaben, die von den Objekten automatisiert erledigt werden sollen.
+Einzelne Aufgaben können dabei auch besser auf leistungsstärkere Geräte zentral ausgelagert werden, weil sie zum Beispiel Informationen zentral zusammenfassen.
+Dies setzt eine Bereitstellung grundlegender Dienste im \gls{IoT} voraus, mit denen alle Geräte mittels einer \gls{M2M}-Kommunikation interagieren können.
+Die Gesamtheit dieser Dienste in der physischen Nähe der Objekte im \gls{IoT} lassen sich unter dem Begriff \gls{Fog Computing} zusammenfassen~\citep{cisco2015fog}.
+\\
+Zunächst sind diese grundlegenden Dienste im \gls{IoT} zu definieren.
+Bei der Definition als auch bei der Konstruktion und Bereitstellung von Diensten muss auch die Heterogenität der Geräte innerhalb des \glsmgen{IoT} beachtet werden, denn bestimmte Dienste sind aufgrund ihres Funktionsumfangs von dieser Eigenschaft abhängig.
+%\textcolor{red}{Heterogenität beschreiben, referenz finden.}
+Die Heterogenität der Objekte entscheidet im Betrieb darüber, wo die Dienste ausgeführt werden können, ob sich einige Objekte besser zur Ausführung eines Dienstes eignen als andere und zuletzt, ob die Bereitstellung durch eine verteilte Ausführung des Dienstes verbessert werden kann.
+Die Beachtung dieser Eigenschaft gewährleistet später eine höhere Skalierbarkeit und Verfügbarkeit der Dienste.
+Ein weiterer entscheidender Aspekt ist die Autonomie, die im Kontext von Diensten im \gls{IoT} eine sehr wichtige Eigenschaft darstellt.
+Dienste, die beispielsweise eine kontinuierliche Abhängigkeit zu externen Ressourcen in anderen Bereichen des \glsmgen{IoT} bilden, benötigen eine gesonderte Betrachtung bei der Bereitstellung.
+Letzten Endes entscheidet schließlich die Positionierung der Dienste über den Erfolg des \glsmgen{Fog Computing} mit der einhergehenden Möglichkeit zur Reduktion der Latenzzeit.
+Es werden verschiedene Szenarien für die Bereitstellung von Diensten im \gls{IoT} verglichen, bei denen Leistungsmetriken im Netzwerk optimiert werden sollen.
+Abschließend sind topologischen Verfahren beschrieben, die bei einer Migration von autonomen Diensten im \gls{IoT} zum Einsatz kommen.
+Ihre Datenerhebung und den darauf basierenden Auswertungen bilden die Grundlage der Migration.
+
+%####NICHT RELEVANT, da einfach 2 service manager ausgeführt werden können für jeden dienst
+%Zum anderen können verschiedene Dienste mit unterschiedlichen im \gls{IoT} vorhanden sein., ist es ihnen vorbehalten, ob sie eigenständige Aufgabenbereiche bearbeiten oder eine gegenseitige Abhängigkeit bilden. Diese gegenseitige Abhängigkeit erzeugt eine Bindung zweier	
+%ob sie in kollaborativ sind und so eine gegenseitige Abhängigkeit bilden oder eigenständige Aufgabenbereiche behandeln.
+%durch die kollaboration müsste ein dienst immer die nähe zu einem anderen dienst suchen...
+
+%Ein Teil dieser Dienste können als \textit{autonome Dienste} im \gls{IoT} betrachtet werden und werden im Folgenden näher erörtert.
+
+%Das \gls{IoT} besteht aus vielen heterogenen Objekten, die eine Vielzahl unterschiedlichster komplexe Anwendungen ausführen können.
+%So wie im klassischem Internet auch, sollen diese komplexen Anwendungen im \gls{IoT} unabhängige Dienste in Anspruch nehmen könnten.
+%Beispiele aus dem klassischem Internet für solche Dienste sind das \gls{DNS} oder auch der \gls{NTP} Dienst.
+%Die auftretende Assoziationsbeziehung zwischen den externen Diensten und den Anwendungen im \gls{IoT} wird als Aggregation und in diesem Fall expliziter als Diensteaggregation bezeichnet.\textcolor{red}{Referenz finden} 
+
+%\section{Das Internet der Dinge}
+%\label{sec:das_internet_der_dinge}
+
+%Das Internet der Dinge wird als eines der nächsten großen Ziele nach der Einführung des Internets %gesehen. (siehe Kapitel~\ref{cha:stand_der_forschung})
+%\textcolor{red}{Erwähnung von heterogenen Objekte}.
+%(Applications http://cseweb.ucsd.edu/classes/wi16/cse237A-a/handouts/8_iot.pdf)
+
+\section{Dienste im Internet der Dinge}
+\label{sec:dienste_im_internet_der_dinge}
+Der Begriff \glqq Dienst\grqq{} ist innerhalb des \gls{IoT} mehrdeutig definiert und variiert zwischen verschiedenen Projekten~\citep{mohammed2015survey}.
+Einige Autoren beschreiben beispielsweise Dienste im \gls{IoT} als eine direkte Darbietung von Objekten in der physikalischen Welt, sogenannte \glqq real-world services\grqq.
+Sie stellen die direkten Informationen aus der physikalischen Welt bereit, sodass mit ihnen in der virtuellen Welt interagiert werden kann~\citep{de2011service}.
+\\
+Andere Ansätze definieren Dienste im \gls{IoT} oftmals anhand von Diensten aus dem Paradigma der \gls{SOA}~\citep{spiess2009soa, chen2011comprehensive}.
+Die \gls{SOA} ist ein Architekturmuster, bei dem versucht wird alle Anwendungen in kleine, voneinander getrennte, logische Einheiten zu kapseln, die separat verteilt werden und in Kombination miteinander arbeiten können.
+Diese Einheiten werden schließlich Dienste genannt~\citep{erl2005service}.
+Es besagt unter anderem, dass ein Dienst eine autarke, plattformunabhängige Komponente mit einer über ein Netzwerk verfügbaren Schnittstelle ist~\citep{bianco2007evaluating}.
+Bezogen auf das \gls{IoT} werden alle von den Objekten angebotenen Funktionen durch einen solchen Dienst abstrahiert und den Benutzern auf einer höheren Softwareebene angeboten~\citep{spiess2009soa}.
+\\
+Die Autoren \citeauthor{thoma2012iot} versuchen schließlich aus den Bereichen der \glqq real-world services\grqq{} und der \gls{SOA} eine allgemeingültige Definition für Dienste im \gls{IoT} zu erstellen~\citep{thoma2012iot}.
+\begin{quote}
+	\textit{An IoT-Service is a transaction between two parties, the service provider and the service consumer.
+		It causes a prescribed function enabling the interaction with the physical world by measuring the state of entities or by initiating actions which will cause a change to the entities.}
+\end{quote}
+%%%%%NOCH IRGENDWO EINBAUEN!! Aus technischer Sicht werden Dienste im \gls{IoT} auf Ressourcen-beschränkten Geräten ausgeführt: mohammed2015survey
+Für diese Arbeit ist diese Definition jedoch nicht hinreichend genug, da sie eine Beschränkung auf Funktionalitäten bezüglich der Entitäten enthält, also der physikalischen Ressource der Objekte im \gls{IoT}.
+\citeauthor{xiaojiang2010services} gehen indes einen Schritt weiter.
+Sie sagen, dass eine weitreichende Anzahl von Applikationen in \gls{IoT}-Dienste eingebunden werden können und diese sich anhand verschiedener Kriterien klassifizieren und kategorisieren lassen~\citep{xiaojiang2010services}.
+Anhand technischer Eigenschaften lassen sich Dienste im \gls{IoT} dabei in vier aufeinander aufbauende Klassen einteilen, dies sind die \glqq Identity-Related Services\grqq, die \glqq Information Aggregation Services\grqq, die \glqq Collaborative-Aware Services\grqq{} und die \glqq Ubiquitous Services\grqq.
+Diese Unterteilung ist von besonderem Interesse, da sie eine gesonderte Betrachtung von Diensten mit physikalischen Ressourcen als auch von Diensten mit einer reinen softwareseitigen Logik beinhaltet.
+Der Interessenfokus dieser Masterarbeit liegt dabei vor allem auf die Klassen der Information Aggregation Services und der Collaborative-Aware Services.
+\\
+Die \glqq Identity-Related Services\grqq{} sind rudimentäre Dienste, die physikalische Objekte mit einem Identifikationsmerkmal, wie zum Beispiel einem RFID-Tag, in die virtuelle Welt übertragen.
+Ein Lesegerät kann diese Objekte auslesen und über ein Netzwerk mehr Informationen zu den Objekten erhalten.
+Diese Dienste sind sehr wichtig, da sie die physikalische und die virtuelle Welt verschmelzen.
+Dadurch sind sie primär ein grundlegender Bestandteil der anderen Dienstklassen~\citep{xiaojiang2010services,gigli2011internet}.
+\\
+Die \glqq Information Aggregation Services\grqq{} sammeln Daten von Sensoren im \gls{IoT}, verarbeiten diese Daten und geben sie über das \gls{IoT} an Anwendungsapplikationen weiter.
+Sie abstrahieren dabei die physikalischen Eigenschaften von Objekten und die Netzwerkzugänge.
+Über verschiedene Netzwerkprotokolle wie ZigBee oder 6LoWPAN hinweg können sie mithilfe von \glspl{Gateway} die Daten verschiedenster Sensoren abfragen und diese gebündelt über Web Services den Anwendungsapplikationen bereitstellen~\citep{gigli2011internet}.
+\\
+Die \glqq Collaborative-Aware Services\grqq{} bauen auf die Information Aggregation Services auf.
+Sie aggregieren ebenfalls Daten aus dem \gls{IoT}, starten anschließend eine Auswertung und führen auf Basis dieser Analyse geforderte Funktionen aus~\citep{gigli2011internet}. Ein bekanntes Beispiel dafür ist die Hausautomatisierung für deren Funktionalität sowohl eine \gls{M2M}-Kommunikation als auch eine erhöhte Zuverlässigkeit, Übertragungsgeschwindigkeit und Prozessleistung der Geräte im \gls{IoT} unabdingbar sind.
+\\
+Die Klasse der \glqq Ubiquitous Services\grqq{} stellt die letzte Stufe der Dienste im \gls{IoT} dar.
+Dies sind Collaborative-Aware Services, die \textit{allen Personen alle Objekte} zu \textit{jeder Zeit} zur Verfügung stellen~\citep{gigli2011internet}.
+Die \gls{ITU} schreibt in ihrem Empfehlungsschreiben zu Netzwerken mit Ubiquitous Services~\citep{itu2010overview}:
+\begin{quote}
+	\textit{"5C+5Any" are key features of ubiquitous networks. 5C stands for convergence, content, computation, communication, and connection. 5Any represents anytime, anywhere, any service, any network, and any object.}
+\end{quote} 
+Diese Klasse stellt somit das ultimative Ziel aller Dienste im \gls{IoT} dar, das es zu erreichen gilt~\citep{al2015internet}.
+Zum aktuellen Stand ist es jedoch noch nicht absehbar, ob diese Ubiquitous Services überhaupt über das Internet angeboten werden~\citep{xiaojiang2010services}.
+Zur Erreichung dieses Status müssen sowohl die Heterogenität, verursacht durch Protokollunterschiede, über Technologien hinweg aufgelöst und alle Aspekte des Netzwerks vereinigt werden~\citep{gigli2011internet, zorzi2010today}.
+
+%Aus diesem Grund werden von den beschrieben Dienstklassen bisher die Identity-Related Services, Information Aggregation Services und die Collaborative-Aware Services als Dienste im \gls{IoT} für Anwendungsapplikationen angeboten. Aus diesem Grund liegt der Fokus dieser Arbeit daher auch auf das Angebot solcher Dienste.
+
+\section{Autonomie von Diensten}
+\label{sec:autonomie_von_diensten}
+%autonomie vs reaktiv http://www.moorinsightsstrategy.com/wp-content/uploads/2014/05/Segmenting-the-Internet-of-Things-IoT-by-Moor-Insights-and-Strategy.pdf
+Ein weiterer zu betrachtender Aspekt bei der Beschreibung von Diensten im \gls{IoT} ist die Autonomie von Dienste, die die wichtigste Anforderung an die Dienste im \gls{IoT} ist.
+\citeauthor{erl2008soa} bezeichnet die Autonomie als die Fähigkeit zur Selbstbestimmung ist~\citep{erl2008soa}.
+Abgeleitet aus dem Paradigma der \gls{SOA}, sollen Dienste im \gls{IoT} die volle Kontrolle über die Durchführung ihrer Logik haben, ohne von externen Einflüssen abhängig zu sein~\citep{bianco2007evaluating}.
+Es ist ein Qualitätsmerkmal, mit dem die Zuverlässigkeit, Performance und Vorhersagbarkeit im Verhalten von Softwareanwendungen gesteigert werden kann.
+Einhergehend muss die Implementierung solcher Dienste jedoch isoliert und unabhängig von anderen Diensten gehandhabt werden~\citep[Seite 294-295]{erl2008soa}.
+Der Autor differenziert dabei zwischen zwei Arten der Autonomie von Diensten, zum einen die Laufzeitautonomie (engl. Runtime Autonomy) und zum anderen die Entwurfszeitautonomie (engl. Design-Time Autonomy).
+\\
+Die Laufzeitautonomie ist die Stufe, die ein Dienst Kontrolle über seine auszuführende Logik während der Ausführung hat.
+Sie soll eine Verbesserung in den bereits genannten Bereichen Zuverlässigkeit, Performance und Vorhersagbarkeit im Verhalten zeigen.
+Zusätzlich wird durch die Isolation eines einzelnen autonomen Dienstes auch die Sicherheit gestärkt, da weniger Angriffspunkte im Vergleich zu verteilten Diensten existieren, bei denen einzelne Funktionen eines Dienstes über mehrere Ausführungsinstanzen verteilt angeboten werden und gemeinsam den Dienst bilden.
+\\
+Die Entwurfszeitautonomie wird als die Stufe beschrieben, bei der ein Dienst bereits in der Entwurfsphase eine externe Unabhängigkeit bildet.
+Die Abhängigkeit geschieht schon zu dem Zeitpunkt, an dem externe Programme oder Dienste auf den eigenen Dienst aufbauen oder in irgendeiner Form verwenden.
+Doch auch die Skalierbarkeit des Dienstes ist ein Faktor, der in die Entwurfszeitautonomie mit einfließt.
+Ein Dienst muss beispielsweise für den Umfang der Nutzungslast ausgelegt und möglicherweise erweiterbar sein.
+Da das \gls{IoT} aus einer dynamischen Anzahl Objekten besteht, ist dieses von Bedeutung.
+Eine weitere externe Abhängigkeit eines Dienstes im \gls{IoT} ist im Bezug auf die Entwurfszeitautonomie die Möglichkeit zur Erweiterung der Ausführungsumgebung des Dienstes.
+In Anbetracht der Tatsache, dass das \gls{IoT} aus einer Vielzahl heterogener Objekten besteht, muss immer eine kompatible Ausführungsumgebung für einen Dienst im \gls{IoT} gewährleistet sein.
+Dabei müssen auch die vom Dienst verwendeten Ressourcen und der momentane Prozessstatus von der Ausführungsumgebung so verwaltet werden, dass sie über Migrationen hinweg konsistent verfügbar bleiben (vgl.~Kapitel~\ref{sec:positionierung_der_autonomen_dienste}).
+%Service Autonomie:
+%https://msdn.microsoft.com/en-us/library/bb245672.aspx
+%http://udidahan.com/2006/01/08/autonomous-services-a-step-beyond-service-orientation/
+%CONS (Connection oriented network service)
+%CLNS (connectionless network service)
+
+
+\section{Positionen der autonomen Dienste}
+\label{sec:positionierung_der_autonomen_dienste}
+\citeauthor{velasquez2016service} zeigen bereits erste Untersuchungen zur Reduktion von Latenzzeiten durch die Platzierung von Diensten im \gls{IoT}~\citep{velasquez2016service}.
+Ihre Betrachtung fokussiert sich auf \glqq Smart Cities\grqq{}, bei der ein zusammenhängendes \gls{IoT} die Grundlage zur Bereitstellung von Diensten bildet.
+Doch das globale \gls{IoT}, in dem die verschiedene Wirtschaftssektoren separat Einfluss nehmen, kann anders als das Internet zurzeit eher als ein geografisch und technisch segmentiertes Netzwerk betrachtet werden.
+Es ist nicht wie das Internet ein global verbundenes Netzwerk, bei dem alle Teilnetzwerke miteinander interagieren können.
+Einzelne Segmente sind sowohl geografisch als auch funktional durch die Wirtschaftssektoren abgegrenzt.
+Möchte man darauf Anwendungsapplikationen aufbauen und die Wirtschaftssektoren vollständig miteinander verschmelzen, müssen zunächst weitere Analysen durchgeführt und die Segmentierung aufgehoben werden.
+Dies spiegelt auch den Zustand des \glsmgen{Fog Computing} wider, bei der eine Interoperabilität der Unterteilungen angestrebt wird~\citep{al2015internet}.
+Aus technischer Sicht grenzen die Segmente des \glsmgen{IoT} am Internet an und können jeweils als eigenständige Subnetzwerk betrachtet werden.
+Zur Überwindung der Inkompatibilität sorgen derzeit spezielle Edge-\glspl{Gateway} für die Kommunikation zwischen dem Internet und dem \gls{IoT}~\citep{stojmenovic2014fog}.
+Die Abbildung~\ref{fig:internet_and_iot_segments} skizziert ein solches segmentiertes \gls{IoT} zusammen mit Internet.
+\begin{figure}[h]
+	\centering
+	\begin{tikzpicture}[
+	iot node/.style={circle,draw,thick,minimum size=2mm,inner sep=0pt,outer sep=0pt,fill=green!10},
+	iot cloud/.style={cloud, cloud puffs=9.5, minimum height=2cm, minimum width=3cm, draw, thick, fill=white},
+	database node/.style={cylinder,draw=black,thick,aspect=0.7,minimum height=0.55cm,minimum width=0.5cm,shape border rotate=90,cylinder uses custom fill, cylinder body fill=red!30,cylinder end fill=red!10},
+	gateway node/.style={rectangle,draw,thick,minimum width=3mm,minimum height=3mm,fill=blue!10}]
+	
+	\node[cloud, cloud puffs=15.7, minimum height=5cm, minimum width=7cm, draw, thick,fill=white] (internet) at (4,4) {Internet};
+	
+	
+	\node[iot cloud, label={[yshift=-2.6cm]IoT-Segment A}] at (-1,0) {};
+	\draw (-1,0.5) -- (1.55,2.2);
+	\draw (-1,0.5) -- (-1,-0.2) node[iot node] {};
+	\draw (-2,0) node[iot node] {}
+	-- (-1,0.5) node[iot node] {}
+	-- (0,0.2) node[iot node] {}
+	-- (-0.3,-0.3) node[iot node] {};
+	
+	\node[iot cloud, label={[yshift=-2.6cm]IoT-Segment B}] at (9,0.5) {};
+	\draw (8.2,1) -- (6.7,2.4);
+	\path \foreach \x/\y [count=\k from 0] in { 10/0.5,  8.5/0, 9.2/0.5,  9.5/0, 8.2/1,  9.5/1}
+	{coordinate [iot node] (p\k) at (\x,\y)}; 
+	\draw \foreach \k [count=\j from 1] in {0,...,4}
+	\foreach \kk  in {\j,...,5}  
+	{(p\k)--(p\kk)};	
+	
+	\node[iot cloud, label={[yshift=-2.6cm]IoT-Segment C}] at (3,-1) {};
+	\draw (3.5,-0.75) -- (4.2,1.5);
+	\draw (2.5,-1) -- (3.5,-0.75) node[iot node] {}
+	-- (3.75,-1.25) node[iot node] {}
+	-- (4,-1) node[iot node] {}
+	-- (3.5,-0.75);	
+	\draw (2,-1) node[iot node] {}
+	-- (2.5,-1.5) node[iot node] {}
+	-- (2.5,-1) node[iot node] {} -- cycle;	
+	
+	\node[iot cloud, label={IoT-Segment D}] at (-2,6) {};
+	\draw (-1,6) -- (0.8,5.0);
+	\draw (-1,6) node[iot node] {}
+	-- (-1.5,6.1) node[iot node] {}
+	-- (-1.8,5.7) node[iot node] {}
+	-- (-2.3,5.7) node[iot node] {}
+	-- (-2.5,6.3) node[iot node] {}
+	-- (-2.7,6.0) node[iot node] {}
+	-- (-2.3,5.7);	
+	
+	\node[iot cloud, label={IoT-Segment E}] at (8,8) {};    
+	\draw (7.2,8) -- (6.2,6.2);
+	\draw (8,7.5) -- (7.65,7.65);
+	\draw (7.65,8.35) -- (8,8.5);
+	\draw (8,8.5) -- (8.35,8.35);
+	\draw (8,8) -- (8,7.5) node[iot node] {};  
+	\draw (8,8) -- (8,8.5) node[iot node] {};  
+	
+	\draw (8,8) -- (8.8,7.8) node[iot node] {}; 
+	\draw (8,8) -- (7.2,8) node[iot node] {};
+	
+	\draw (8,8) -- (8.35,8.35) node[iot node] {};  
+	\draw (8,8) -- (7.65,7.65) node[iot node] {};  
+	\draw (8,8) -- (7.65,8.35) node[iot node] {}; 
+	\draw (8,8) node[iot node] {};
+	
+	
+	\draw (1.55,2.2) -- (2,4.5);
+	\draw (4.2,1.5) -- (4,2.7);
+	\draw (6.7,2.4) -- (6,4);
+	\draw (0.8,5.0) -- (2,4.5);
+	\draw (6.2,6.2) -- (4.5,5.5);
+	
+	\draw (2,4.5) -- (6,4);
+	\draw (4.5,5.5) node[database node] (databasenorth) {}
+	-- (6,4) node[database node] {}
+	-- (4,2.7) node[database node] {}
+	-- (2,4.5) node[database node] {}
+	-- cycle; 
+	
+	\node[gateway node] (gatewaya) at (1.55,2.2) {};
+	\node[gateway node] at (4.2,1.5) {};
+	\node[gateway node] (gatewayb) at (6.7,2.4) {};
+	\node[gateway node] at (0.8,5.0) {};
+	\node[gateway node] at (6.2,6.2) {};
+	
+	\node (labelgatewaya) at (-1.5,3) {Gateway A}; 
+	\path [->, >=stealth, bend angle=10, bend right, shorten <= -3mm, shorten >= 1mm] (labelgatewaya.south east) edge (gatewaya.west);
+	
+	\node (labelgatewayb) at (9.75,3.2) {Gateway B}; 
+	\path [->, >=stealth, bend angle=10, bend left, shorten <= -3mm, shorten >= 1mm] (labelgatewayb.south west) edge (gatewayb.east);
+	
+	\node (labeldatabasenorth) at (1.45,7) {
+		Diensteanbieter}; 
+	\path [->, >=stealth, bend angle=10, bend right, shorten >= 1mm] (labeldatabasenorth.south) edge (databasenorth.west);
+	
+	\end{tikzpicture}
+	\caption[Das Internet und die derzeitigen IoT-Segmente als Skizze]{Das Internet und die derzeitigen IoT-Segmente als Skizze. Geografisch und technisch betrachtet grenzen die Segmente des \glsmgen{IoT} am Internet an. Sie sind jeweils eigenständige Netzwerke, die über spezielle Edge-Gateways mit dem globalen Internet verbunden sind.}
+	\label{fig:internet_and_iot_segments}
+\end{figure}
+Die für das \gls{IoT} angebotenen Dienste können sich an jeder beliebigen Position in diesem segmentiertem \gls{IoT} oder im Internet befinden.
+Bekannte \gls{Cloud}-\gls{Diensteanbieter} wie \citeauthor{cisco2015transforming} und \citeauthor{amazon2016how} versuchen die Transformation ihrer \gls{Cloud}-Infrastruktur zu einer Bereitstellung und Anbindung von Objekte im \gls{IoT} an ihre Applikationen mittels \gls{Fog Computing} zu meistern~\citep{cisco2015transforming, amazon2016how}.
+Doch nicht für alle \gls{IoT}-Dienste ist es von Vorteil, wenn diese durch \gls{Diensteanbieter} abgebildet werden.
+Je nach Arbeitsaufgabe der autonomen Dienste kann es zusätzlich essenziell sein, dass diese sich in bestimmten Bereichen eines \glsmgen{IoT} befinden.
+Anhand eines Beispiels für das \gls{Fog Computing} lässt es sich einfach nachvollziehen.
+\\
+Ein Collaborative-Aware Service könnte beispielsweise die einfache Aufgabe haben, die Sensordaten von den Objekten im \gls{IoT} zu aggregieren (vgl.~Kapitel~\ref{sec:dienste_im_internet_der_dinge}).
+Anschließend soll er nach einer Auswertung an bestimmten Positionen im \gls{IoT} wieder neue Aktionen von Aktoren auszulösen.
+Eine Möglichkeit 
+%dieses einfache Vorhaben zu erreichen
+wäre die Übertragung der Sensordaten durch das \gls{IoT} über ein \gls{Gateway} zu einem zuvor definierten zentralen Cloudserver eines \glsmgen{Diensteanbieter}, bei dem der Dienst platziert ist.
+Der Server verarbeitet die aggregierten Sensordaten.
+Die gewünschten Aktionen der Aktoren sendet er zurück an einen Vermittler, der als externe Schnittstelle für das \gls{IoT} gilt.
+Schließlich verteilt der Vermittler die Aktionen an die relevanten Objekte innerhalb des \glsmgen{IoT}, die abschließend die Aktionen ausführen.
+\\
+Dabei sind allerdings zwei Punkte zu beachten.
+Der Server befindet sich in diesem Systemaufbau bei einem externen \gls{IoT}-\gls{Diensteanbieter} in einem weit entfernten Netzwerk, wodurch lange Übertragungslaufzeiten entstehen.
+Bilden die Objekte im \gls{IoT} außerdem noch ein kabelloses \gls{Mesh}-Netzwerk und sind nicht direkt an das \gls{Gateway} angeschlossen, müssen die Sensordaten über mehrere Objekte weitergeleitet werden, zusätzliche Paketverluste und ein hoher Kommunikationsaufwand können entstehen.
+Um diese Paketverluste anwendungsseitig zu vermeiden, werden beispielsweise spezielle Anwendungsprotokolle wie das \gls{CoAP} auf den Objekten im \gls{IoT} benötigt, die bei einem Verlust der Sensordaten eine erneute Übertragung der Daten initiieren~\citep{al2015internet, RFC7252}.
+\\
+Ein solches System mit \gls{Diensteanbieter} erfordert zudem viele Anforderungen an die gesamte Infrastruktur.
+Es müssen leistungsstarke \glspl{Gateway} eingesetzt werden, die die massiven Daten aller im \gls{IoT} befindlichen Objekte an die \gls{Diensteanbieter} weiterleiten können.
+Sind viele Objekte im \gls{IoT} vorhanden, die über ein \gls{Gateway} mit den Diensten verbunden sind, wird das \gls{Gateway} zum Flaschenhals des Systems.
+Eine Ausfallsicherheit zwischen \glspl{Gateway} und Internet muss daher gewährleistet werden.
+Die \gls{Diensteanbieter} müssen ferner eine kontinuierliche Bereitstellung ihrer Dienste sicherstellen.
+Ohne diese Verfügbarkeit der Dienste können Fehlfunktionen an den Objekten entstehen.
+Da die Datenverbindungen durch das \gls{Gateway} geleitet werden, muss zusätzlich der maximale \gls{Durchsatz} im \gls{IoT} in die Richtung der \glspl{Gateway} hoch sein.
+\\
+Eine Lösung zur Minimierung dieser Anforderungen ist die Bereitstellung eines autonomen Dienstes innerhalb des \glsmgen{IoT}, wie es das \gls{Fog Computing} vorsieht~\citep{bonomi2012fog, stojmenovic2014fog, bonomi2014fog}.
+Dies kann entweder auf den bereits vorhandenen oder auf dedizierten Objekten im \gls{IoT} geschehen, die durch eine erhöhte Leistung speziell für die Ausführung von Diensten ausgelegt sind.
+Diese Bereitstellung reduziert bereits die Auslastung an den \glspl{Gateway} zwischen dem \gls{IoT} und dem Internet.
+Wird der autonome Dienst zusätzlich immer in der physisch unmittelbaren Umgebung der interagierenden Objekte im \gls{IoT} bereitgestellt, werden die Übertragungswege weitestgehend minimiert und damit die Verlustrate, die durchschnittliche \gls{RTT} und der im gesamten \gls{IoT} vorhandene Datenverkehr reduziert.
+Doch ist es für die Bereitstellung des autonomen Dienstes notwendig stetig auf Veränderungen am Systemzustand reagieren zu können.
+Verändern sich mit der Zeit die mit dem Dienst interagierenden Objekte, kann es dazu führen, dass der Dienst nicht mehr an der bisherigen Position benötigt wird und eine \textit{Migration des autonomen Dienstes} schließlich unabdingbar wird.
+Die Migration transferiert den autonomen Dienst auf ein neues Objekt im \gls{IoT}, das sich wieder in der physisch unmittelbaren Umgebung der interagierenden Objekte befindet~\citep{liu2005design}.
+Dadurch kann eine fortwährende Minimierung der Übertragungswege gewährleistet und die Interaktion zwischen autonomen Dienst und den interagierenden Objekten im \gls{IoT} beschleunigt werden.
+Wird der autonome Dienst zwischen vielen Objekten oft migriert, spricht man von einer \textit{Wanderung des Dienstes} durch das \gls{IoT}.
+\\
+Der Fokus dieser Masterarbeit liegt auf die Unterstützung zur Migration und Ausführung autonomer Dienste, wie sie in den vorangegangenen Kapiteln~\ref{sec:dienste_im_internet_der_dinge} und \ref{sec:autonomie_von_diensten} beschrieben sind.
+Im Interesse einer langfristigen Kompatibilität sollen die autonomen Dienste im \gls{IoT} sowohl eine vollständige Isolation der Programmlogik als auch der Datenressourcen vorweisen (vgl.~\citep[Tabelle 10.2]{erl2008soa}).
+Dies sichert eine vereinfachte Migration ohne externe Abhängigkeiten sowie angelehnt an der \gls{SOA} die Modularität und eine einhergehende Wartbarkeit der Dienste~\citep{bianco2007evaluating}.
+Zusätzlich vereinfacht es die Erstellung einer einheitlichen Testumgebung für den in Kapitel~\ref{cha:service_manager} definierten Service~Manager, der eine Plattform für die Ausführung und Migration solcher autonomen Dienste bietet.
+\\
+In Kapitel~\ref{cha:evaluation} soll schließlich evaluiert werden, ob eine Migration durch den Service~Manager an strategisch sinnvollen Positionen zur gewünschten Reduktion der Verlustrate und der durchschnittlichen \gls{RTT} führt.
+Dazu werden im Folgenden sechs unterschiedliche Szenarien verglichen, die einen autonomen Dienst in allen Bereiche des \glsmgen{IoT} und des Internets platzieren.
+Einige Szenarien lassen den autonomen Dienst durch \gls{IoT}-Segmente wandern, bei den restlichen befindet sich der autonome Dienst an fixierten Positionen. Diese Szenarien werden schließlich in zwei unterschiedlichen Systemaufbauten untersucht.
+Im ersten Systemaufbau befinden sich die anfragenden Objekte zufällig verteilt im \gls{IoT}-Segment~A.
+In einem zweiten Systemaufbau wird eine Verdoppelung der anfragenden Objekte durchgeführt, die in das \gls{IoT}-Segment~B zufällig verteilt hinzugefügt werden (vgl.~Abbildung~\ref{fig:internet_and_iot_segments}).
+Diese Szenarien stellen stufenweise unterschiedliche Anforderungen an die verschiedenen Komponenten.
+Die wandernden Dienste erfordern eine Rechenleistung auf den einzelnen Objekten im \gls{IoT}, während die Szenarien mit interagierenden \glspl{Gateway} eine hohe Auslastung dieser darstellt, da alle Daten über diese Flaschenhälse übertragen werden müssen.
+Ein in der Praxis nicht zu vernachlässigbarer Aspekt ist die Beachtung von Sicherheitsaspekten.
+Befindet sich ein angebotener Dienst am \gls{Gateway} eines anderen \gls{IoT}-Segments oder innerhalb des anderen \gls{IoT}-Segments, so entstehen Problematiken mit Datenschutz und Zugriffsberechtigungen~\citep{al2015internet}.
+\begin{description}[labelindent=1cm]
+\item[Szenario 1:] Der Dienst wandert im \gls{IoT}-Segment A.
+\item[Szenario 1a:] Der Dienst wandert im \gls{IoT}-Segment A mit dedizierten Dienstobjekten.
+\item[Szenario 2:] Der Dienst befindet sich am \gls{Gateway} A.
+\item[Szenario 3:] Der Dienst befindet sich bei einem \gls{IoT}-Dienstanbieter im Internet.
+\item[Szenario 4:] Der Dienst befindet sich am \gls{Gateway} des \gls{IoT}-Segments B.
+\item[Szenario 5:] Der Dienst wandert im \gls{IoT}-Segment B.
+\end{description}
+
+\section{Topologische Verfahren der Migration}
+\label{sec:topologische_verfahren_der_migration}
+Die in Kapitel~\ref{sec:positionierung_der_autonomen_dienste} bereits definierten Szenarien zeigen, dass autonome Dienst durch das \gls{IoT} wandern sollen.
+Wie bei diesen Wanderungen jedoch speziell die einzelnen Migrationen durchgeführt werden, ist noch nicht genau vorgegeben.
+Grundvoraussetzung für die Migrationen durch ein \gls{IoT}-Segment und den in diesem Kapitel vorgestellten topologischen Verfahren ist ein durch die Objekte bereitgestelltes \gls{Mesh}-Netzwerk.
+% \textcolor{red}{Routing}-Protokoll durch dieses \gls{Mesh}-Netzwerk.
+In einem \gls{Mesh}-Netzwerk sind alle Netzwerkknoten mit einem oder mehreren anderen verbunden.
+Ist das Netzwerk beispielsweise kabellos, so können all diejenigen Objekte miteinander verbunden sein, die sich in der physischen Nähe zueinander befinden.
+Mithilfe von Routing-Protokollen werden auf dem \gls{Mesh}-Netzwerk basierend Übertragungswege zwischen nicht direkt verbundenen Objekten ermöglicht.
+Informationen werden über die Netzwerkknoten bis zum Ziel weitergereicht~\citep{wittenburg2010service}.
+\\
+Bei der Analyse der Kommunikation zur Durchführung einer Migration können verschiedene Verfahren eingesetzt werden.
+Diese wurden für die Bereitstellung von Diensten in \glsmgenpl{Ad-hoc-Netzwerk} entwickelt, können aber auch für das \gls{IoT} adaptiert werden.
+Dabei haben alle im Folgenden vorgestellten Verfahren mehrere Dinge gemein.
+Zunächst werden alle Verfahren auf dem Objekt ausgeführt, auf dem auch der zu migrierende autonome Dienst ausführt wird und damit eine Unabhängigkeit zwischen allen Objekten gewährleistet.
+Während der Ausführung wird die Laufzeit in beliebige, aber konstante Intervalle quantisiert; zugleich werden die am Objekt ein- und ausgehenden Datenpakete der anderen mit ihm interagierenden Objekte beobachtet.
+Zum Ende eines jeden Intervalls wird auf Grundlage der beobachteten Menge der Datenpakete eine Entscheidung zur Migration getroffen und zwar entweder ob der Dienst weiter auf dem Objekt ausgeführt oder auf ein anderes Objekt im \gls{IoT} migriert werden soll.
+Mit der Annahme, dass alle Objekte im \gls{IoT} den TCP/IP-Stack implementieren, können die folgenden Verfahren zur Migration von autonomen Diensten verwendet werden.
+Auch eine Migration zwischen verschiedenen \gls{IoT}-Segmenten ist mit diesen Methoden möglich.
+Wenn Adressen durch Verfahren wie \gls{NAT} ersetzt werden, erfolgt zunächst eine Migration zum \gls{Gateway} des Netzwerks, der die Ausführung des autonomen Dienstes zwischenzeitlich übernimmt.
+
+\subsection{LinkPull}
+Das \textit{LinkPull}-Verfahren betrachtet alle ein- und ausgehenden Datenpakete an der \gls{Netzzugangsschicht}~\citep{liu2005design}.
+Zur Laufzeit des autonomen Dienstes werden kontinuierlich die Paketheader der \gls{Netzzugangsschicht} entpackt.
+Diese beinhalten bei eingehenden Datenpaketen die Informationen des letzten und bei ausgehenden Paketen die Informationen des nächsten \glsmgen{Hop}.
+So wird innerhalb eines Intervalls die Größe der gesamten gesendeten und empfangenen Kommunikationsdaten erhoben, und zwar aufgeteilt auf die direkten Nachbarn des dienstausführenden Objektes.
+Eine Migration am Ende des Intervalls wird schließlich zu dem direkten Nachbarn durchgeführt, über den die meisten Datenpakete übertragen wurden.
+In jedem Intervall findet somit jeweils eine Migration über einen einzelnen \gls{Hop} im \gls{IoT} statt.
+%-> betrachtung der Datenpakete am physikal link layer
+%-> migration findet über einen hop statt
+%-> zur laufzeit  werden link-level header entpackt -> die beinhalten den letzten hop
+%-> größe gesnederter und empfangerner kommunikationsdaten von dem direkten nachbar wird gesqammelt
+%-> zum nachbar mit größter kommunikationsdaten anzahl wird migriert
+
+\subsection{PeerPull}
+Bei dem \textit{PeerPull}-Verfahren werden die Datenpakete auf der \gls{Internetschicht} betrachtet~\citep{liu2005design}.
+Ähnlich dem LinkPull-Verfahren wird innerhalb eines Intervalls die Größe der gesamten gesendeten und empfangenen Kommunikationsdaten erhoben.
+Allerdings teilt sich die Gesamtgröße nicht auf die direkten Nachbarn auf, vielmehr findet eine Aufgliederung der Gesamtgröße auf die Netzwerkadressen statt, mit denen der autonome Dienst kommuniziert.
+Bei eingehenden Datenpaketen sind es die IP-Adressen der Quellen und bei ausgehenden Datenpaketen entsprechend die IP-Adressen der Ziele.
+Am Ende des Intervalls wird der Dienst schließlich über mehrere \glspl{Hop} hinweg zu dem Objekt migriert, mit dem der bisherige Dienst am meisten kommuniziert hat.
+%-> betrachtung der datenpakete auf netzwerk ebene
+%-> in jedem intervall wird netzwerk source address bei eingehenden und netzwerk destination %address bei ausgehenden betrachtet und die größe der kommunikationsdaten gesammelt
+%-> am ende eines intervalls wird zu dem objekt mit der größten anzahl kommunikationsdaten migriert
+%-> migration über mehrere hops gleichzeitig
+
+\subsection{NetCluster}
+Das \textit{NetCluster} ist ein einfaches Verfahren, bei dem die autonomen Dienste immer in das aktivste Cluster migriert werden~\citep{liu2005design}.
+Ein Cluster bildet sich dabei immer aus den Objekten, die die Datenpakete über den selben 1-\gls{Hop}-Nachbarn des derzeit dienstausführenden Objektes übertragen und sich somit ihren Übertragungsweg über ihn teilen.
+Anhand der während des Intervalls erhobenen Größe der gesamten gesendeten und empfangenen Kommunikationsdaten wird am Ende jeden Intervalls der aktivste Cluster berechnet.
+Aus diesem Cluster wird zufällig ein Objekt als neues dienstausführendes Objekt ausgewählt und abschließend eine Migration zu diesem durchgeführt.
+Wie bei dem LinkPull-Verfahren ist dazu eine Extraktion des Paketheaders der \gls{Netzzugangsschicht} aller Datenpakete notwendig.
+%-> es werden dienste in das aktivste cluster migriert
+%-> ein cluster besteht immer aus den objekten, die in einer direkten nachbarschaft sind (1-hop)
+%-> am ende eines intervalls wird der aktivste cluster berechnet und zu einem zufällig ausgewählten knoten aus dem cluster migriert
+%-> dafür muss die direkte nachbarschaft am dienst ausführenden objekt bekannt sein
+
+\subsection{TopoCenter(n)}
+\label{subsec:topocenter_n}
+Einen anderen Ansatz verfolgt das Verfahren \textit{TopoCenter(n)}~\citep{liu2005design}.
+Einem durch das \gls{Mesh}-Netzwerk übertragenes Datenpaket werden zu Beginn die Verbindungsinformationen des sendenden Objektes angehängt.
+Diese beinhalten die \textit{n}-\gls{Hop}-Nachbarschaft des Objektes.
+Im einfachsten Fall ist \(n=1\).
+Bei jeder Weiterleitung auf dem Weg zum autonomen Dienst durch das \gls{Mesh}-Netzwerk werden die Informationen zur Topologie weiter akkumuliert.
+Jedes Objekt im \gls{IoT} entpackt dazu das ausgehende Datenpaket, speichert die zuvor angehängten Nachbarschaften ab und hängt ebenfalls seine \textit{n}-\gls{Hop}-Nachbarschaft an das Datenpaket an.
+Schließlich wird das Datenpaket zum nächsten Objekt in die Richtung des Dienstes weitergeleitet.
+Alle Objekte können so einen Teil des \gls{Mesh}-Netzwerkes aufbauen, in dem sie sich befinden.
+Das dienstausführende Objekt speichert zusätzlich zu allen Nachbarschaften intern die Größe der gesendeten und empfangenen Kommunikationsdaten.
+\\
+Am Ende eines Intervalls berechnen alle Objekte die kürzesten Pfade zu allen anderen bekannten Objekten im \gls{Mesh}-Netzwerk.
+Das dienstausführende Objekt berechnet zusätzlich auf Grundlage dieser kürzesten Pfade die anfallenden Migrationskosten zu allen anderen Objekten und auf Basis der gesammelten Größe der Kommunikationsdaten die im nächsten Intervall voraussichtlichen Kommunikationskosten zu allen Objekten.
+Diese beiden Variablen sollen möglichst minimiert werden, weshalb die Migration zu dem Objekt durchgeführt wird, bei dem beide Variablen in der Berechnung minimal sind.
+% baut auf nur einen teil des netzwerk auf
+% verbindungsinformationen werden an jedes datenpaket gehangen
+% jeder knoten hängt seine n-hop nachbarschaft an ausgehenden paketen an
+% auf dem weg zum service wird die topologie information weiter akkumuliert
+% alle objekte auf dem weg entnehmen die topologie informationen von den pakten, die sie weiterleiten
+% das dienst objekt speichert zusätzlich die größe gesnederter und empfangerner kommunikationsdaten 
+% am ende eines intervalls berechnet jeder knoten den kürzesten pfad zu allen anderen bekannten knoten
+%-> auf basis der kürzesten pfade werden migrationskosten und auf basis der gesammelten kommunikaiotnsdaten die voraussichtliche Kommunikationskosten berechnet.
+%-> mit diesem wissen wird eine migration durchgeführt
+
+%\subsubsection{Tree-topology Migration}
+%2007 - Scalable Service Migration The Tree Topology
+
+\subsection{Globale Informationen}
+\label{subsec:global_information}
+Die hier abschließend betrachtete Alternative unterscheidet sich von den anderen Verfahren zur Migration von autonomen Diensten darin, dass sie \textit{globale Informationen} über das zu betrachtende System kennt.
+Dieser Informationsgehalt kann in realen Umgebungen wie dem \gls{IoT} oder auch dem Internet bei der Berechnung eines geeigneten Objekts zur Ausführung eines autonomen Dienstes nicht vorausgesetzt werden, da das \gls{IoT} beispielsweise aus unzähligen heterogenen Objekten besteht und allein aufgrund der Größe die Informationen nicht bereitgestellt werden können.
+In geschlossenen Emulationsumgebungen, wie das in Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed} vorgestellte \gls{MIOT}-Testbed oder das in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} beschriebene \gls{SDN}, ist es jedoch durchaus möglich, da sowohl die Anzahl der Objekte als auch die Anzahl der Verbindungen untereinander in einem überschaubaren Rahmen sind.
+Bereits für die Erstellung des \glsmgen{Virtual Network Emulator} ist die Kenntnis über Informationen aller Objekte und den Verbindungen zwischen in den Objekten im \gls{Mesh}-Netzwerk notwendig, doch dazu später im Kapitel~\ref{sec:emulationsumgebung_software_defined_network} mehr.
+%Aus diesem Grund könnten die globalen Informationen bei der Verwendung von Emulationsumgebungen in Kapitel~\ref{cha:evaluation} eingesetzt werden.
+\\
+Das Verfahren mit globalen Informationen kann als eine Abwandlung des TopoCenter(n)- und des PeerPull-Verfahren angesehen werden.
+Innerhalb eines Intervalls werden wie bei diesen Verfahren die Größen der gesendeten und empfangenen Datenpakete zusammen mit der IP-Adresse des mit dem autonome Dienst kommunizierenden Objektes gespeichert.
+Am Ende eines Intervalls wird schließlich eine Berechnung auf Basis des kürzesten Pfades und der aufgenommenen Datenpaketgrößen durchgeführt.
+So kann ein zentrales Objekt zur Ausführung des autonomen Dienstes gefunden werden, bei dem die vorausberechneten Kommunikationskosten minimal sind.
+%Einige setzen globale Infomrationen voraus, die unter raelen bedingenungen nicht möglich wären
+%-> ist notwendig für emulation im sdn
+%-> emulation relativ klein, daher ok
+%-> musste vorher eh aufgenommen werden aus dem testbed
+%-> kann also weiter verwendet werden
+%-> da im sdn keine mesh netzwerke möglich
+
+%\subsection{Charakteristika von Diensten}
+% wurde im Kapitel "Autonome Dienste" bereits beantwortet?
+
+%\section{Anforderungen}
+%\label{sec:anforderungen} 
+%Zur näheren Untersuchung der Dienstaggregation und ihren verschiedenen Konstellationen, ist die Realisierung eines Softwarepakets notwendig. Mithilfe dessen ist es abschließend möglich, die in Kapitel~\ref{sec:dienstaggregation} beschriebene Szenarien mit entscheidenden Messergebnissen zu untersuchen. Dieses Softwarepaket besteht aus mehreren voneinander unabhängigen Teilkomponenten, die aufeinander aufbauend in einzelnen Schritten entwickelt werden.

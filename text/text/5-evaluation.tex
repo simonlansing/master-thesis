@@ -1,0 +1,938 @@
+%!TEX root = ../main.tex
+\chapter[Die Evaluation der Dienstemigration im Internet der Dinge]{Die Evaluation der Dienstemigration\\ im Internet der Dinge}
+\label{cha:evaluation}
+\newcommand{\yaxislogscaletext}{Durchschnittliche RTT in ms [log Skala]}
+\newcommand{\yaxispercentagetext}{Anteil der Migrationen in Prozent}
+\newcommand{\graphicserverdescriptionshort}{Innerhalb einer Messreihe werden die möglichen Migrationen aller dienstausführenden Objekte im \gls{SDN}-Testsystem zusammengefasst und teilen sich in vier Möglichkeiten auf.}
+Im letzten Schritt werden die in den vorherigen Kapiteln beschrieben Komponenten des \glsmgen{IoT} miteinander kombiniert, indem die in Kapitel~\ref{cha:autonome_dienste} vorgestellten autonomen Dienste mit dem in Kapitel~\ref{cha:service_manager} definierten Service~Manager miteinander vereint werden, sodass sie schließlich als eine gemeinsam Plattform beurteilt und abschließend Schlüsse gezogen werden können.
+Zum einen soll so die Realisierbarkeit des Service~Managers und seinen Funktionsweisen überprüft werden.
+Zum anderen kann anhand dessen die Migration autonomer Dienste im \gls{IoT} durchgeführt werden, die in verschiedenen Testfällen auf ihre Machbarkeit und Effizienz evaluiert wird.
+\\
+Die gesamte Evaluation findet in einer emulierten \glsmgen{IoT}-Umgebung mittels \gls{SDN} statt.
+Die zuvor in Kapitel~\ref{cha:topologische_charakteristika} ermittelten Leistungsmetriken sowie die Datenstruktur mit den Informationen über den Netzwerkgraph finden hier ihre Anwendung.
+Zunächst wird ein Vergleich von Emulationsplattformen und die Emulation des \gls{MIOT}-Testbeds beschrieben.
+\\
+Darauf folgt eine Definition des Aufbaus des autonomen Dienstes für die Evaluation.
+Hier ist auch die Beschreibung des sogenannten Performance-Client zu finden, der auf mehreren Hosts im virtuellen Netzwerk ausgeführt wird und durch seine Eigenart bei der Nachrichtenübertragung eine große Bedeutung für die Messaufnahme vergleichbarer Testfälle spielt.
+\\
+Die eigentliche Evaluation findet schließlich durch die Überprüfung verschiedener Testfälle statt.
+Dabei werden mithilfe des autonomen Dienstes, des Service~Managers und des Performance-Clients zunächst verschiedene Variablengrenzen des virtuellen Umgebung ausgemessen.
+Auf diese kann schließlich in den finalen Testfällen zurückgegriffen werden, sodass die definierten Szenarien in einem segmentierten \gls{IoT} durch einen festgelegten Testrahmen betrachtet werden können.
+%Messungen und Auswertung verschiedener Testszenarien \ref{sec:testszenarien_dienste_im_iot}
+
+%-> keine externen einflüsse bei emulation, wie bewegungen während stoßzeiten (siehe kapitel xx)
+%-> isolierte umgebung (traffic isolation)~\citep{chan2014opennet}
+\section{Emulation durch Software-Defined Networking (SDN)}
+\label{sec:emulationsumgebung_software_defined_network}
+In Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed} ist bereits das \gls{MIOT}-Testbed als auch die Aufnahme der Leistungsmetriken in diesem Testbed beschrieben.
+Diese aufgenommenen Leistungsmetriken sollen nun in einem weiteren Schritt als Grundlage zur Erstellung eines virtuellen Netzwerkes mittels \gls{SDN} dienen.
+Das \gls{SDN} ist ein Ansatz zur Virtualisierung von Netzwerken, bei der die unterliegende Hardwareinfrastruktur durch Software abstrahiert wird.
+Die \gls{SDN}-Architektur erlaubt dabei die Entkopplung der im Netzwerk vorhandenen Steuerungs- von den Weiterleitungsfunktionalitäten.
+Diese Funktionalitäten werden im Netzwerk in der \textit{\gls{CP}} und der \textit{\gls{FP}} verarbeitet.
+\\
+Die \gls{CP} bestimmt durch Regeln die Signalpfade für die zu übertragenden Daten durch das unterliegende Netzwerk in der \gls{FP} und optimiert diese.
+In einem einzelnen Router werden diese Informationen beispielsweise lokal in Routing-Tabellen festgehalten.
+Beim \gls{SDN} wird die \gls{CP} üblicherweise durch einen zentralen \textit{Controller} für das gesamte Netzwerk verwaltet und gesteuert.
+Dies ist eine Softwarekomponente auf einem zentralen Server, der die gesamte Netzwerkstruktur bekannt ist.
+Durch das Hinzufügen, Ändern und Entfernen von Regeln kann der Controller sogenannte \textit{Flows} für ganze Paketmengen zwischen einer Quelle und einem Ziel bestimmen, die er als Forwarding-Tabellen an die einzelnen Netzwerkgeräte der \gls{FP} verteilt~\citep{etherealmind2011openflow}.
+\\
+Die \gls{FP} ermöglicht die Datenübertragung zwischen den Hosts, indem sie die eingehenden Pakete bearbeitet und zum nächsten \gls{Hop} weiterleitet.
+In dieser Ebene befindet sich üblicherweise die Hardware in Form von Routern und Switches.
+Doch die \gls{FP} kann nicht nur durch Hardware dargestellt werden.
+Es existieren auch rein virtuelle Lösungen, die ein Netzwerk vollständig in Software durch virtuelle Router und Switches abbilden.
+\\
+Im \gls{SDN} erhalten die Geräte der \gls{FP} vom zentralen Controller aus der \gls{CP} die Weiterleitungsregeln für Pakete als Forwarding-Tabellen und fragen diesen für den Umgang mit neuen Paketen an.
+Im Gegenzug senden sie dem Controller Informationen über ihre Auslastung und dem momentanen Datenverkehr~\citep{techtarget2015sdn}.
+Die Regeln einzelner Flows können beispielsweise die MAC- und IP-Adressen sowie Ports von der Quelle und dem Ziel oder auch Parameter für \gls{VLAN} und \gls{QoS} enthalten~\citep{etherealmind2011openflow}.
+Die Kommunikation zwischen der \gls{CP} und der \gls{FP} kann über das standardisierte und herstellerunabhängige Protokoll OpenFlow geschehen~\citep{onf2016sdn}.
+Hersteller können dies in ihre Geräte zur Anbindung an die Controller im \gls{SDN} implementieren.
+Dabei ist auch die Kombination von virtuellen und aus Hardware bestehenden Netzwerken möglich.
+%\textcolor{red}{abwandlung der pakete im SDN nicht möglich, da keine knoten sondern switche und soimit nur level 2 pakete -> am bersten im dem kapitel beschreiben, in dem auch das sdn vorgestellt wird -> der grund, warum Globale Informationen eingesetzt werden müssen}
+\subsection{Auswahl der Komponenten für das SDN}
+\label{subsec:auswahl_komponenten_sdn}
+Die Grundlage für ein \gls{SDN} wird durch die \gls{CP} und die \gls{FP} gebildet.
+Die beiden Ebenen sollen zu Emulationszwecken das in Kapitel~\ref{sec:analyse_der_leistungsmetriken_im_miot_testbed} vorgestellte \gls{MIOT}-Testbed durch Softwarekomponenten darstellen und die notwendigen Funktionsanforderungen bereitstellen.
+Zu diesen Funktionsanforderungen zählen zum einen, dass die in der Adjazenzliste gespeicherten Leistungsmetriken programmierbar in das Simulationsnetzwerk übertragen werden können (vgl.~Kapitel~\ref{sec:datenstruktur_der_topologischen_charakteristika}).
+Dabei soll eine hohe Flexibilität gewährleistet sein, wenn das Netzwerk durch Entfernen von Kanten aus der Adjazenzliste modifiziert werden muss.
+Zum anderen sollen sowohl der Controller als auch der Emulator für das virtuelle Netzwerk ohne großen Konfigurationsaufwand über das OpenFlow-Protokoll zueinander kompatibel sein.
+In~\citep{hu2014survey} stellen die Autoren einige der Controller und Emulatoren für virtuelle Netzwerke vor.
+\\
+Eine davon ist die \textit{OpenDaylight SDN Platform}, die sowohl einen \gls{SDN}-Controller als auch eine vollständige Open~Source Plattform anbietet, mit der unter anderem eine \gls{NRO} durchgeführt werden kann~\citep{opendaylight2016opensdnplatform}.
+Die Plattform wird in einer eigenen \gls{VM} ausgeführt. 
+Für eine einfache Bereitstellung des Netzwerks ist diese Plattform sehr umfangreich und benötigt einen hohen Konfigurationsaufwand.
+Für jeden Anwendungsfall müssen sogenannte Features passend nachinstalliert werden.
+\\
+Ein weiteres Projekt ist der \textit{discrete-event network simulator ns-3}~\citep{nsnam2016ns3}.
+Es ist in C++ geschrieben und ermöglicht die Anbindung an Python.
+Der Hauptunterschied zwischen ns-3 und anderen Projekten liegt jedoch in der Ausführung der Software.
+Diese wird simuliert und nicht emuliert.
+Für eine wirkliche Adaption des \gls{MIOT}-Testbeds ist eine Emulation vorzuziehen.
+Zwar unterstützt ns-3 die Simulation kabelloser Verbindungen und die Bewegung von Objekten innerhalb des Netzwerks, doch diese Anforderungen sind bei den ausgewählten Szenarien nicht weiter relevant.
+Ein weiterer Punkt ist die eingeschränkte Unterstütztung für OpenFlow und \gls{SDN}-Controllern.
+Die Simulation des gesamten Netzwerks müsste dazu vollständig innerhalb von ns-3 entwickelt werden~\citep{chan2014opennet}.
+\\
+Als eigenständiger Controller kann der Python-basierend \textit{POX-Controller} verwendet werden~\citep{stanford2015pox}.
+Es ist einer der ersten verfügbaren \gls{SDN}-Controller auf Grundlage des NOX-Controllers, die Weiterentwicklung stagniert allerdings in den letzten Jahren.
+Darüber hinaus muss zur Verbesserung der Performance und auch zur Erkennung von Zyklen in Graphen, wie sie im Fall des vorhandenen \gls{Mesh}-Netzwerks vorkommen, dieser Controller durch die Entwicklung eigener Komponenten konfiguriert werden~\citep{streit2015pox}.
+\\
+Ein für die Emulation des \gls{MIOT}-Testbeds optimaler \gls{SDN}-Controller ist der in Java geschriebene \textit{Floodlight OpenFlow \gls{SDN}-Controller}~\citep{floodlight2016controller}.
+Ohne weitere Konfiguration unterstützt er das Weiterleiten von Paketen in \gls{Mesh}-Netzwerken, die Zyklen enthalten, sofern diese vollständig durch OpenFlow angebunden sind.
+Dies ist im Fall der vollständigen Emulation des \gls{MIOT}-Testbeds gegeben.
+Wie der Service~Manager Objekte zur Ausführung des Dienstes im \gls{IoT} auffindet (vgl.~Kapitel~\ref{sub:entwurfsmuster_und_architektur_network_router}), berechnet der Floodlight-Controller den kürzesten Pfad zwischen zwei Objekte zur Weiterleitung der Pakete.
+Zyklen im Netzwerk werden so erkannt.
+\\
+Als \gls{Virtual Network Emulator} mit Anbindung an \glspl{SDN} durch OpenFlow eignet sich \textit{Mininet}~\citep{lantz2010network}.
+Auf einer einzelnen Maschine mit Linux-Kernel erstellt Mininet ein vollständiges, virtuelles Netzwerk, bestehend aus Hosts, Layer-2~Switches, Layer-3~Routern und den Verbindungen zwischen diesen.
+Es emuliert dadurch die zuvor beschriebene \gls{FP} des \gls{SDN}.
+Sie verhalten sich wie echte Geräte, die über virtuelle Ethernet-Schnittstellen miteinander verbunden sind und auf denen Programme ausgeführt werden können.
+Für die Emulation des \gls{MIOT}-Testbeds zeichnet sich Mininet sehr flexibel bei der Anpassung der Topologie aus und verspricht ein realistisches Verhalten im Umgang mit der Ausführung von Programmen im Vergleich zu Simulationsumgebungen wie ns-3~\citep{lantz2010network}.
+Eine Einschränkung besteht jedoch bei Mininet dadurch, dass die Heterogenität der Objekte nicht genau abgebildet werden kann.
+Bis auf die Leistungsfähigkeit der \gls{CPU} sind alle im virtuellen Netzwerk vorhandenen Objekte homogen.
+Durch die \gls{SDN}-Anbindung mittels OpenFlow zeigt Mininet außerdem eine hohe Kompatibilität zu verschiedenen \gls{SDN}-Controllern, wie auch zu dem bereits definierten Floodlight-Controller.
+Mittels einer Python-\gls{API} können in Mininet alle notwendigen Geräte im Netzwerk erzeugt werden (vgl.~Kapitel~\ref{subsec:emulation_miot_testbed}).
+Bereitgestellt wird Mininet als eigene Installation oder über eine eigene auf Ubuntu~14.04~LTS basierenden \gls{VM}~\citep{mininet2016virtualnetwork}.
+
+\subsection{Emulation des MIOT-Testbeds}
+\label{subsec:emulation_miot_testbed}
+In diesem Kapitel wird schließlich die Emulation des \gls{MIOT}-Testbeds durch den \gls{Virtual Network Emulator} Mininet und dem \gls{SDN}-Controller Floodlight beschrieben (vgl.~Kapitel~\ref{subsec:auswahl_komponenten_sdn}).
+Die Emulation wird über die vom Mininet-Projekt bereitgestellte \gls{VM} durchgeführt.
+Mininet in der Version~2.2.1 ist hier bereits vorinstalliert.
+Die \gls{VM} basiert auf Ubuntu~14.04~LTS~(64bit) und wird mithilfe von VMWare~Workstation~Pro~12 virtualisiert.
+Die Basis bildet ein Computer mit einer Intel~Core~i5~3570k \gls{CPU}, 16~GB \gls{RAM} und als Betriebssystem Windows~10~Education~N.
+Davon stehen der \gls{VM} 12~GB \gls{RAM} und zwei \glspl{CPU} mit jeweils zwei Kernen pro \gls{CPU}, insgesamt somit 4 Prozessorkerne, zur Verfügung.
+Zusätzlich zu Mininet wird innerhalb der \gls{VM} der \gls{SDN}-Controller Floodlight und einhergehend das \gls{JDK} in der Version~8 benötigt.
+Die Installation wird anhand der Instruktionen in~\citep[Getting Started]{floodlight2016controller} durchgeführt.
+\\
+Die Ausführung des virtuellen Netzwerks erfolgt mithilfe des Skripts \inlinecode{mesh_topo.py} für Python in der Version~2.7.6 (vgl.~Anhang~\ref{appendix:cd}).
+Die Python-\gls{API} von Mininet verfolgt dabei von der Erstellung des virtuellen Netzwerks bis hin zur Ausführung von Software auf den virtuellen Hosts einen objektorientierten Ansatz.
+Über ein Objekt der Klasse \inlinecode{mininet.net.Mininet} kann das gesamte Netzwerk erzeugt, gestartet und schließlich gestoppt werden.
+Die \inlinecode{pingAll}-Methode der Klasse erlaubt die Ausführung einer ping-Messung zur Überprüfung der Erreichbarkeit zwischen allen Hosts des Netzwerks.
+Bei der Erstellung des Objektes können optional eine Topologie sowie Optionsparameter für Hosts, Switches und Verbindungen (engl. Links) im Netzwerk übergeben werden.
+Diese einzelnen Parameter werden im Folgenden detaillierter beschrieben.
+\\
+Die Topologie beinhaltet bei Mininet die Kombination aller im virtuellen Netzwerk vorhandenen Hosts, Switches und Links.
+Durch Ableitung der Basisklasse \inlinecode{mininet.topo.Topo} und durch Überschreibung der \inlinecode{build}-Methode kann die Klasse für die Topologie erzeugt werden.
+Hier wird das Netzwerk mithilfe der in Kapitel~\ref{sec:datenstruktur_der_topologischen_charakteristika} definierten Adjazenzliste erstellt.
+Allen Hosts der Klasse \inlinecode{mininet.node.Host} wird ein Name und eine aufsteigende \gls{IPv4} im Netzwerk \(10.0.0.0/24\) zugewiesen.
+Da Hosts in Mininet nicht direkt in einem \gls{Mesh}-Netzwerk miteinander verbunden werden können, erhält jeder Host einen eigenen Switch der Klasse \inlinecode{mininet.node.Switch}.
+Abhilfe könnte dazu der \gls{Fork} des Mininet-Projektes Mininet-Wifi schaffen~\citep{mininetwifi2016virtualwifinetwork}, da es die Simulation kabelloser \gls{Mesh}-Netzwerke unterstützt.
+Bei der Erstellung eines \gls{Mesh}-Netzwerkes können allerdings keine Verbindungen, sondern nur die absoluten Positionen von jedem Host in einem zweidimensionalen Koordinatensystem angegeben werden, die zunächst aus den relativen Kanten des Graphens in der Adjazenzliste berechnet werden müssten.
+Aus diesem Grund wird die Simulation mit dem originalen Mininet-Projekt durchgeführt.
+\\
+Innerhalb eines Tupels sind alle Hosts mit ihrem jeweiligen Switch über einen verlustfreien Link der Klasse \inlinecode{mininet.link.Link} miteinander verbunden.
+Zwischen den Switches erfolgen schließlich die Verbindungen anhand der in der Adjazenzliste zusammengetragenen Informationen über den \gls{Durchsatz} und die \gls{ETX}.
+Ein Link der Klasse \inlinecode{mininet.link.TCLink} (Traffic Control Link) erlaubt eine in ihren Ressourcen eingeschränkte Verbindung durch die Parameterangabe bezüglich \glsmgen{Durchsatz} und der aus der \gls{ETX} berechneten Verlustrate als Gütemaße.
+\\
+Das Netzwerk selber ist durch die Topologie bereits definiert.
+Doch zusätzliche Informationen über die verschiedenen Hosts, Switches und über die Links können über die weiteren Optionsparameter von Mininet definiert werden.
+Mit der Parameterangabe der Klasse \inlinecode{mininet.node.CPULimitedHost} können die Hosts in ihrer \gls{CPU} eingeschränkt werden.
+Abhängig von der gesamten \gls{CPU}, die der Mininet-\gls{VM} zur Verfügung steht, bekommt jeder Host so einen gleichgroßen Anteil.
+Versuche mit dieser Angabe zeigten jedoch, dass die Hosts durch die Einschränkung der \gls{CPU} der Ausführung der Testfälle nicht mehr gerecht wurden, weshalb diese Option im weiteren Verlauf außer Acht gelassen wird.
+Darüber hinaus können weitere Leistungsmetriken einzelner Hosts wie die Größe von \gls{RAM} und Speicher nicht weiter eingeschränkt werden.
+Für die Testfälle ist der Parameter \inlinecode{mininet.node.OVSSwitch} für die Switches im Netzwerk jedoch notwendig.
+Die Switches werden so in \textit{Open~vSwitches} umgewandelt, die zum einen das OpenFlow-Protokoll unterstützen~\citep{openvswitch2016website}.
+Über eine direkte Verbindung an die \gls{CP} sind sie ohne die Einschränkungen der TCLinks mit dem noch zu integrierenden \gls{SDN}-Controller verbunden.
+Zum anderen ist durch die Verwendung der Open~vSwitches das \gls{STP} einsetzbar.
+\\
+Ferner fehlt die Anbindung zwischen Mininet und dem \gls{SDN}-Controller Floodlight.
+Dieser muss vor dem Start von Mininet bereits eigenständig in der \gls{JRE} ausgeführt werden.
+Ohne weiteren Konfigurationsaufwand stellt er standardmäßig den für das OpenFlow-Protokoll verwendeten Port 6653 bereit.
+Durch die Angabe eines Controllers als \inlinecode{mininet.node.RemoteController} kann sich Mininet schließlich in der lokalen \gls{VM} mit ihm verbinden.
+Durch die Anbindung kennt der Floodlight-Controller zwar bereits die gesamte Topologie, Routen hat er durch das Netzwerk jedoch noch nicht gebildet. 
+Mithilfe der Ausführung von \inlinecode{pingAll} durch Mininet kann der Controller die Weiterleitungsregeln für alle Switches eigenständig aufbauen, sodass die Wege zwischen allen Hosts zur Ausführungszeit der Messungen in den Testfällen garantiert bekannt sind.
+Sofern sie nicht durch die Verlustrate wegfallen, muss der der Controller diese nicht neu berechnen.
+Abschließend kann die Durchführung der Testfälle mithilfe der in Kapitel~\ref{sec:performance_client_und_dienst} definierten Testapplikationen beginnen.
+
+\section{Dienst und Performance-Client}
+\label{sec:performance_client_und_dienst}
+Zur Untersuchung des Service~Managers aus Kapitel~\ref{cha:service_manager} und der Testfälle, die in Kapitel~\ref{sec:testfaelle_dienste_im_iot} spezifiziert sind, werden im Wesentlichen zwei Testapplikationen benötigen.
+Neben einen eigenständigen Dienst, der über die Service~Manager~Plattform zwischen den Hosts im \gls{IoT} migriert werden kann, wird auch ein Client benötigt, der die Performance des Systems in verschiedenen Testfällen testet.
+Die grundlegende Idee ist die Abbildung des Anwendungsfalls, bei dem mehrere Client-Objekte mit einem zentralen Dienst im \gls{IoT} kommunizieren.
+Die Client-Objekte sollen dem zentralen Dienst in einer konstanten Rate Nachrichten senden, auf die der Dienst unverzüglich antwortet.
+Die Client-Objekte fassen bei jeder Kommunikation mit dem Dienst die generierten Messdaten zusammen.
+Der Dienst ist dabei fortwährend zustandslos.
+Die anfragenden Client-Objekte sind in den jeweiligen Testfällen immer die selben, während sich das dienstausführende Objekt zur Verbesserung der Leistungsmetriken (vgl.~Kapitel~\ref{sec:leistungsmetriken_im_iot}) durch Migration des Dienstes stetig ändert.
+Über eine Diensterkennung in der Client-Applikation und Dienstsignalisierung in der Service~Manager~Plattform sollen die Clients die Migrationen der Dienstobjekte erkennen.
+\\
+Der Dienst und die Clients werden über das bereits in Kapitel~\ref{subsec:emulation_miot_testbed} beschriebene Skript \inlinecode{mesh_topo.py} nach dem Erzeugen des Netzwerks auf den virtuellen Hosts im Netzwerk von Mininet gestartet.
+Während alle potentiell dienstausführenden Objekte nur die Service~Manager~Plattform in Betrieb nehmen, übernimmt ein Objekt im \gls{IoT} zusätzlich die erste Ausführung des Dienstes.
+Der Dienst zur Durchführung der Testfälle ist ein einfaches Programm, das einen Server startet und einen \gls{TCP}-Socket bereitstellt.
+Auf einem den Clients zuvor bekannten Port horcht er auf die Anfragen der Clients und führt selber proaktiv keine eigenen Aufgaben aus.
+Verbindet sich ein Client, startet dieser direkt eine Datenübertragung zum Dienst.
+Nach Erhalt der Daten antwortet der Dienst ohne weitere Verarbeitung und Verzögerung dem jeweiligen Client.
+Durch dieses einfache Vorgehen können die geforderten Leistungsmetriken bis zur Applikationsebene gemessen werden, ohne dass der Dienst durch einen Bearbeitungsaufwand die Ergebnisse beeinflusst.
+\\
+Die Clients hingegen besitzen mehr Logik in ihrer Ausführung, starten bei der Datenübertragung zum Dienst fortwährend Messungen von Leistungsmetriken und speichern die Ergebnisse für eine nachstehende Auswertung ab.
+Dabei werden alle im System vorhandenen Clients mit den gleiche Ausführungsinformationen gestartet.
+Zur Durchführung des Nachrichtenversands in einer konstanten Rate erhalten die Clients die folgenden Informationen als Parameter:
+\begin{itemize}
+	\item Die Größe der zu sendenden Nachrichten in Bytes.
+	\item Die Anzahl aller Nachrichten, die insgesamt gesendet werden sollen.
+	\item Die Anzahl der Nachrichten, die pro Minute gesendet werden sollen.
+	\item Die Wartezeit bevor der Client mit seinen Messungen anfangen soll.
+\end{itemize}
+Dabei spielt es für das gesamte System und den jeweiligen Testfällen keine Rolle, wie die zu übertragenen Nachrichten auf der Applikationsebene aussehen.
+Sie könnten theoretisch durch die Aufnahme der Daten von Sensoren entstehen.
+Da die Objekte beim \gls{SDN} jedoch nur virtuelle Hosts sind, ist es für die Untersuchungen in Kapitel~\ref{sec:testfaelle_dienste_im_iot} hinreichend, randomisierte Daten fester Größe von den Clients generieren zu lassen und diese durch das \gls{IoT} zum Dienst zu übermitteln.
+Bei der Nachrichtenübermittlung in einer konstanten Rate entsteht allerdings schnell das Problem, dass sich das System bereits nach wenigen Sekunden einpendelt.
+Aus diesem Grund ist die Software des Performance-Client mit einer Funktion versehen, die zwar eine Unregelmäßigkeit bei der Kommunikation zwischen den Nachrichten generiert, der Nachrichtenstrom über die Zeit jedoch weiterhin konstant bleibt.
+\\
+In der Funktion sei die vom Client ausgehende konstante Nachrichtenrate als \(R\) in Nachrichten pro Minute definiert.
+Anstelle einer iterativen Übertragung, bei der vor jeder Nachrichtenübermittlung auf den vollständigen Abschluss der vorherigen Übermittlung gewartet wird, sollen sie zyklisch mit einer durchschnittlichen Wartezeit \(w\) mit \(w=1/R\) im Minuten respektive \(w=60/R\) in Sekunden vor dem Versand jeder Nachrichten übermittelt werden.
+Doch so entsteht die nicht gewünschte Regelmäßigkeit in der Übertragung; die Zeit zwischen dem Absenden von zwei Nachrichten ist konstant.
+\\
+Die Idee ist die Erzeugung einer Unregelmäßigkeiten dadurch, dass die Nachrichten nicht in einem Intervall mit 60~s versenden werden, sondern bereits in einem verkürzten Zeitintervall \(I\) in Sekunden mit \(I < 60~s\).
+Pro Minute wird durch dieses neuen Zeitintervall ein Intervall \(I_{\text{frei}}=60-I\)~Sekunden frei.
+Die gesamte Menge der zuvor definierten Nachrichten, die pro Minute hätten versandt werden sollen, ist so bereits nach \(I\) Sekunden vom Client versendet worden.
+Die dabei frei gewordene Zeit wurde der Wartezeit \(w\) zwischen den Nachrichten entnommen.
+Aus diesem Grund verkürzt sich die durchschnittliche Wartezeit \(w_{\text{neu}}\) zwischen den einzelnen Nachrichten um den Faktor \(I/60\) auf \(w_{\text{neu}}=I/R\).
+\\
+Diese Sekunden könnten am Ende jeden Intervalls in einer Sequenz als Wartezeit verwendet werden.
+Doch stattdessen wird bei jeder Nachricht der Anteil der frei gewordenen durchschnittliche Wartezeit \(w_{\text{frei}}\) mit \(w_{\text{frei}}=I_{\text{frei}}/R=(60-I)/R\) auf ein Pausenkonto gutgeschrieben.
+Das Pausenkonto beinhaltet die eingesparte Wartezeit aller bereits versendeten Nachrichten und muss innerhalb der gesamten Ausführung, jedoch zu einem beliebigen Zeitpunkt aufgebraucht werden, da es sonst eine Erhöhung der Nachrichtenrate \(R\) zur Folge hat.
+Daher wird das Pausenkonto mit einer frei festgelegten Wahrscheinlichkeit \(P_\text{Leerung}\), hier mit \(P_\text{Leerung} = 1 / \left(2 \times R\right)\), vor dem Versand einer Nachricht vollständig geleert.
+So wird bei den Clients zu unterschiedlichen Zeitpunkten die Leerung ihres Pausenkontos angestoßen und insgesamt ein unregelmäßiger Nachrichtenstrom am Dienst erzeugt, der abhängig von der vorherigen konstanten Nachrichtenrate \(R\) ist.
+\\
+Eine weitere Fluktuation ist außerdem bei der neuen durchschnittlichen Wartezeit \(w_{\text{neu}}\) vorhanden, die eine weitere Variabilität in die Nachrichtenrate bringt.
+Anstelle der Berechnung eines festen Wertes für alle Wartezeiten, wird ein zufälliger Wert aus dem Intervall \(\left[0.5\times w_{\text{neu}}, 1.5\times w_{\text{neu}}\right]\) gewählt.
+Dies betrifft allerdings nur die tatsächlich zu wartende Zeit, für die Gutschrift auf das Pausenkonto wird weiterhin die durchschnittliche Wartezeit \( w_{\text{neu}}\) verwendet.
+\\
+Neben dieser unregelmäßigen Nachrichtenübermittlung besitzt die Client-Software eine weitere Funktion, die für die Diensterkennung zuständig ist.
+Dabei horchen die Clients über einen \gls{UDP}-Port auf neue Broadcast-Mitteilungen der dienstausführenden Objekte, die von der Service~Manager~Plattform versendet werden (vgl.~Kapitel~\ref{sub:entwurfsmuster_und_architektur_service_handler}).
+Da die Verbindungen im Netzwerk verlustbehaftet sind, können die Broadcast-Mitteilungen verloren gehen und die Clients die Mitteilungen nicht erhalten.
+Zur Lösung dieses Problems besitzen sie einen selbstorganisierenden Mechanismus, der bei mehrfach erfolglosen Verbindungsaufbau zum Dienst sogenannte \inlinecode{who\_is}-Nachrichten per Broadcast sendet.
+Alle Clients und der dienstausführende Service~Manager antworten über eine \inlinecode{who\_is\_answer}-Nachricht mit der Adresse, unter dem der Dienst erreichbar ist.
+Dieses System aus Dienst und den Performance-Clients sorgt damit für einen reibungslosen Ablauf der Messungen in Kapitel~\ref{sec:testfaelle_dienste_im_iot}.
+
+\section{Messungen und Auswertung verschiedener Testfälle}
+\label{sec:testfaelle_dienste_im_iot}
+In verschiedenen Testfällen sollen abschließende Messungen überprüfen, ob die Bereitstellung eines Dienstes über die in Kapitel~\ref{cha:service_manager} vorgestellten Service~Manager~Plattform aus Sicht der Clients eine Verbesserung der Latenzzeit im virtuellen Netzwerk zur Folge hat.
+Die Latenzzeit ist einer der wichtigsten Leistungsmetrik (vgl.~Kapitel~\ref{subsec:latenzzeit}), die bei dem \gls{Fog Computing} und der einhergehenden Analyse beobachtet werden kann und im Folgenden bei den verschiedenen Testfällen verglichen wird~\citep{al2015internet, bonomi2012fog, stojmenovic2014fog, bonomi2014fog}.
+Die Messungen erfolgen auf den in Kapitel~\ref{sec:performance_client_und_dienst} vorgestellten Dienst und Performance-Client, bei denen die Clients mindestens 2.000~Messungen durchführen.
+In einigen Testreihen ergeben sich Abweichungen in der Anzahl der Durchführungen aufgrund einer zu geringen Messdauer; sie sind in den nachstehenden Unterkapiteln jeweils gekennzeichnet.
+Eine weitere Auswertung aller im Netzwerk vorhandenen Service~Manager erfolgt im Bezug auf die Migrationen des Dienstes.
+Der Vergleich erfolgt hierbei auf Basis aller möglichen Migrationen und wie sich die Service~Manager diesbezüglich verhalten haben.
+Unterschieden wird hier zwischen vollständig abgeschlossenen Migrationen, abgelehnten Migrationen und Migrationsfehlern.
+Die Ergebnisse aller Testfälle wurden dabei mit dem Python-Skript \inlinecode{final_evaluation.py} erstellt.
+\\
+Da bisher mit dem in Kapitel~\ref{sec:emulationsumgebung_software_defined_network} von Mininet erstellten virtuellen Netzwerk noch keine Messungen durchgeführt wurden, werden zunächst dessen Grenzen anhand der folgenden Variablen in vier Testfällen überprüft.
+In ihrem jeweiligen Testfall werden sie näher analysiert:
+\begin{enumerate}
+	\item Gesendete Nachrichten pro Minute und Host
+	\item Migrationszykluszeit
+	\item Gesendete Nachrichtengröße auf Applikationsebene
+	\item Anzahl Migrationen bei konstanter Datenrate
+\end{enumerate}
+Neben der Überprüfung der Grenzen erfolgt auch eine sukzessive Festlegung der Variablen auf einen jeweiligen Standardwert, wodurch die Messungen der verschiedenen Testfälle auch untereinander vergleichbar bleiben.
+Zu beachten ist hier, dass die konstante Datenrate in Punkt~4 keine eigene Variable ist, sondern eine Kombination aus den gesendeten Nachrichten pro Minute und Host sowie der Größe dieser Nachrichten.
+Das den Messungen zugrundeliegende Netzwerk wird aus der in Kapitel~\ref{sec:messergebnisse_und_auswertung} final erstellten Adjazenzliste erzeugt (vgl.~Testfälle~1-4 und Abbildungen~\ref{fig:testcase1_client_results}-\ref{fig:testcase4_server_results}).
+Der dazugehörige Graph enthält insgesamt 41~Objekte und 634~Verbindungen, von denen alle einen Service~Manager bereitstellen und somit potentielle Kandidaten für die Ausführung einer Dienstinstanz sind (vgl.~Abbildung~\ref{fig:vollstaendiger_graph_miot_emulation_iot}).
+25\% von diesen 41~Objekten, aufgerundet auf insgesamt 11~Objekte, werden als Clients verwendet.
+Schrittweise werden die einzelnen Variablen in den jeweiligen Testfällen solange weiter erhöht, bis sie an eine maximale Grenze stoßen.
+Eine Voruntersuchung zeigte, dass sich hier eine weitere Erhöhung der Client-Anzahl sehr negativ auf die Variablen auswirkt.
+Die obere Grenze wurde dabei so schnell erreicht, dass in keinem Testfall vergleichbare Messungen vorgenommen werden konnten.
+Die Grenzen zeichnen sich bei den Messungen in Mininet primär durch eine der nachstehenden drei verschiedene Merkmalen aus:
+\begin{itemize}
+	\item Trotz Erhöhung der jeweiligen Variable können bei den Messungen keine Veränderungen in der gemessenen Leistungsmetrik erkannt werden.
+	\item Die Erhöhung der jeweiligen Variable erzeugt eine so große Anfragemenge, dass die virtuellen Hosts im Netzwerk schließlich überlastet sind.
+	\item Der Floodlight \gls{SDN}-Controller kann die große Menge anfragender Hosts bei dem Auffinden von Routen nicht mehr standhalten und stürzt dauerhaft ab.
+\end{itemize}
+Bei der Ausmessung der maximalen Grenzen in dem großen Netzwerk stört die Verlustrate der Verbindungen, die durch die Angabe von \gls{ETX} bei der Verwendung von \inlinecode{mininet.link.TCLink} übergeben wird (vgl.~Kapitel~\ref{subsec:emulation_miot_testbed}).
+Da die Grenzen zunächst nicht von der Verlustrate abhängig sind, sondern durch die maximale Leistungsfähigkeit von Mininet und dem \gls{SDN}-Controller bestimmt werden, wurde die Verlustrate für die ersten Messungen zunächst unterbunden.
+Das Auffinden eines geeigneten, dienstausführenden Objektes durch den Service~Manager (vgl.~Kapitel~\ref{sub:entwurfsmuster_und_architektur_network_router}) erfolgt daher in den ersten Testfällen nicht auf der Basis der Leistungsmetrik \gls{ETX}, sondern auf den \gls{Durchsatz}, der ebenfalls in der Adjazenzliste zu finden ist.
+Dadurch sind die Grenzen weiterhin aussagekräftig, nur die Migrationen werden anhand eines anderen Kriteriums durchgeführt.
+\\
+Ohne die Messungen der vier Variablengrenzen könnte kein Testrahmen gebildet werden, der für die abschließenden Messreihen relevant ist (vgl.~Testfälle~5-6 und Abbildungen~\ref{fig:testcase5_client_results}-~\ref{fig:testcase6_server_results}).
+Bei diesen Messreihen werden abschließend die bereits aufgestellten Szenarien aus Kapitel~\ref{sec:positionierung_der_autonomen_dienste} miteinander verglichen.
+Diese sind nachstehend nochmals erläutert:
+\begin{description}[labelindent=1cm]
+\item[Szenario 1:] Der Dienst wandert im \gls{IoT}-Segment A.
+\item[Szenario 1a:] Der Dienst wandert im \gls{IoT}-Segment A mit dedizierten Dienstobjekten.
+\item[Szenario 2:] Der Dienst befindet sich am \gls{Gateway} A.
+\item[Szenario 3:] Der Dienst befindet sich bei einem \gls{IoT}-Dienstanbieter im Internet.
+\item[Szenario 4:] Der Dienst befindet sich am \gls{Gateway} des \gls{IoT}-Segments B.
+\item[Szenario 5:] Der Dienst wandert im \gls{IoT}-Segment B.
+\end{description}
+Für die Testfälle~5-6 wird jedoch eine Segmentierung des \glsmgen{IoT} benötigt, bei der zwei getrennte \gls{IoT}-Segmente durch ein Internet miteinander verbunden sind.
+Das daraus entstehende Netzwerk soll schließlich bei der Emulation durch Mininet Verwendung finden.
+Hier wird die Bedeutung der Adjazenzliste evident.
+Das Netzwerk kann durch die Entfernung von Kanten aus der Adjazenzliste respektive von Nachbarn aus den Listen innerhalb der Adjazenzliste sehr einfach beschnitten werden (vgl.~Kapitel~\ref{sec:datenstruktur_der_topologischen_charakteristika}).
+Aus dem Graphen in Abbildung~\ref{fig:vollstaendiger_graph_miot_emulation_iot} mit 41~Knoten wird zunächst ein Knoten extrahiert, sodass eine gerade Anzahl übriger Knoten entsteht.
+Alle Kanten von und zu diesem Knoten werden für das Vorhaben entfernt.
+Die übrigen 40~Knoten werden anschließend zufällig auf zwei Teilgraphen aufgeteilt und alle Kanten zwischen den beiden Teilgraphen entfernt.
+Diese bilden schließlich die zwei voneinander getrennten \gls{IoT}-Segmente.
+Zur Emulation der zwei Gateway-Knoten werden aus den beiden Teilgraphen jeweils ein Knoten ausgewählt.
+Durch erneutes Einfügung des zuvor extrahierten Knotens werden die beiden Gateway-Knoten über jeweils eine Kante miteinander verbunden.
+Aufgrund der Annahme, dass die Gateways mit dem Internet verbunden sind, repräsentiert dieser neue Knoten das Internet als ein fester Knotenpunkt zwischen den \gls{IoT}-Segmenten.
+Selbstverständlich besteht das reale Internet nicht nur aus einem Knoten.
+Doch wird zur Emulationsmöglichkeit angenommen, dass die Verbindungen im globalen Internet bereits so weit ausgereift sind, dass mögliche Effekte durch die \gls{IoT}-Segmentierung entstehen und nicht durch Verluste im Internet.
+Die Kanten zwischen den Gateway-Knoten und dem Internetknoten stellen die Verbindungen zum Internet dar.
+Zur Abbildung eines realistischen Netzwerks werden sie mit einem \gls{Durchsatz} über 50~Mbit/s in beide Richtungen ohne Verlustrate angenommen.
+Die Abbildung~\ref{fig:beschnittener_graph_miot_emulation_segmentiertes_iot} zeigt den beschnittenen Graphen, der dem gewünschten Netzwerk zugrunde liegt.
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase1_client_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis} [
+	boxplot chart style,
+	ymode=log,
+	ymax=15000,
+	ymin=0.05,
+	xtick={1, 2, 3, 4, 5, 6, 7},
+	xticklabels={10,30,60,120,180,240,300},
+	ylabel={\yaxislogscaletext},
+	xlabel={Anzahl der gesendeten Nachrichten pro Minute und Host}]
+	\pgfplotsinvokeforeach{0,...,6} {
+		\pgfplotstablegetelem{#1}{om}\of\datatable
+		\edef\outliers{\pgfplotsretval}
+		\addplot[mark=x,
+		boxplot prepared from table={
+			table=\datatable,
+			row=#1,
+			lower whisker=lw,
+			upper whisker=uw,
+			lower quartile=lq,
+			upper quartile=uq,
+			median=med
+		}, boxplot prepared
+		]
+		coordinates {\outliers};
+	}
+	\end{axis}
+	\end{tikzpicture}
+	\caption[Vergleich der RTT gegenüber der gesendeten Nachrichten pro Minute und Host]{Vergleich der RTT gegenüber der gesendeten Nachrichten pro Minute und Host. In dem Testfall werden die gesendeten Nachrichten pro Minute und Host immer weiter erhöht, bis das \gls{SDN}-System schließlich an seine Grenzen kommt.}
+	\label{fig:testcase1_client_results}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase1_server_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis} [
+	grouped bar chart style,
+	y axis percentage style,
+	xticklabels={10,30,60,120,180,240,300},
+	ylabel={\yaxispercentagetext},
+	xlabel={Anzahl der gesendeten Nachrichten pro Minute und Host}]
+	
+	\addplot [style={bblue,fill=bblue,mark=none}] table[x expr=\coordindex+1, y=migrations_done_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={oorange,fill=oorange,mark=none}]	table[x expr=\coordindex+1,
+	y=migration_rejected_mig_tresh_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={ggreen,fill=ggreen,mark=none}] table[x expr=\coordindex+1, y=migration_rejected_num1_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={rred,fill=rred,mark=none}] table[x expr=\coordindex+1, y=migrations_error_percentage, col sep=semicolon] {\datatable};
+	
+	\legend{Vollstände Migration,Abgelehnte Migration (Schwelle),Abgelehnte Migration (Bester Server),Migrationsfehler}
+	\end{axis};
+	\end{tikzpicture}
+	\caption[Vergleich der Migrationen gegenüber der gesendeten Nachrichten pro Minute und Host]{Vergleich der Migrationen gegenüber der gesendeten Nachrichten pro Minute und Host. \graphicserverdescriptionshort}
+	\label{fig:testcase1_server_results}
+\end{figure}
+
+Im ersten Testfall werden die gesendeten Nachrichten pro Minute und Host solange weiter gesteigert, bis das System eine der drei Grenzen erreicht hat (vgl.~Abbildungen~\ref{fig:testcase1_client_results}-\ref{fig:testcase1_server_results}).
+Aufgrund der verwendeten \gls{TCP}-Verbindungen und einer \gls{MTU} von 1.500~Bytes im Netzwerk ist die Nachrichtengröße des Performance-Clients auf 1.460~Bytes festgelegt.
+Dies entspricht der \gls{MSS}, sodass eine Nachricht durch genau ein Netzwerkpaket abgebildet werden kann.
+Zur Erlangung eines aussagekräftigen Ergebnisses senden die Hosts respektive Performance-Clients bei den ersten drei Messreihen insgesamt 2.000~Nachrichten.
+Ab 120~Nachrichten pro Minute und Host erhöht sich die Gesamtanzahl der Nachrichten auf 10.000.
+Dies führt zur Verlängerung ihrer Ausführungszeit und zu einer Angleichung der Ausführungszeit zwischen allen Messreihen.
+Ohne die Angleichung läge die Ausführungszeit bei den letzten Messreihen jeweils unter 10~Minuten.
+Die Abbildung~\ref{fig:testcase1_client_results} stellt die Ergebnisse des Testfalls mit Boxplots dar.
+Zur Darstellung werden die Ergebnisse pro Messreihe aufsteigend sortiert.
+Innerhalb der Kästen befinden sich all diejenigen Ergebnisse einer Messreihe, die größer als die niedrigsten 25\% (unteres Quartil) und kleiner als die höchsten 25\% (oberes Quartil) sind.
+Die Mittelbalken in den Kästen kennzeichnen als Median der Messreihe die 50\%-Marke.
+Die beiden Antennen stellen jeweils das 1,5-Fache des Interquartilsabstands dar und werden als \glqq Whisker\grqq{} bezeichnet.
+Falls in den Messdaten kein Wert an den Whisker-Positionen aufzufinden ist, werden die Whisker auf den zum Kasten nächsten Messpunkt festgelegt.
+Die Punkte außerhalb der 1,5-Fachen des Interquartilsabstände stellen die Ausreißer der jeweiligen Messreihe dar.
+In der Abbildung ist die logarithmische Skala zu beachten.
+\\
+Beginnend bei 10~Nachrichten pro Minute und Host wird bei den Messungen das Maximum bei 300~Nachrichten pro Minute und Host erreicht, die die 11~Clients zum Dienst senden.
+Eine weitere Erhöhung verursacht einen Absturz des Floodlight \gls{SDN}-Controllers mit einer \inlinecode{java.lang.NullPointerException} in der \inlinecode{link discovery update loop}, von der er sich nicht mehr erholen kann.
+Diese Experimente müssen daher abgebrochen werden.
+Während die Erhöhung von 10 auf bis 60 Nachrichten pro Minute und Host kaum Veränderungen in dem Median der \gls{RTT} zwischen Client und Dienst zeigen, steigt dieser ab 120 Nachrichten pro Minute und Hosts bereits auf das Doppelte an und erhöht sich in den nächsten Messreihen weiter.
+Die unteren Whisker repräsentieren in der Abbildung~\ref{fig:testcase1_client_results} die minimalen Werte der Messreihen.
+Diese sind bei allen Messreihen sehr gering und fast identisch, da der Service~Manager den Dienst auch auf einen Host migrieren kann, auf dem der Performance-Client ausgeführt wird.
+So müssen bei diesen Messungen keine externen Verbindungen in der Kommunikation zwischen Performance-Client und Dienst aufgebaut werden.
+\\
+%Weiterhin ist zu erkennen, dass die letzten drei Messreihen eine Verringerung der Ausreißer zur Folge hat.
+%Allgemein entstehen diese, weil das Netzwerk bei den ersten Messungen zunächst den \gls{SDN}-Controller anfragen muss
+%Veränderung der gesamten Anzahl gesendeter Nachrichten bei den letzten drei Messreihen die Folge hat, dass die Ausreißer
+Die Abbildung~\ref{fig:testcase1_server_results} zeigt die zusammengefassten Resultate der Migrationen aller dienstausführenden Objekte respektive Service~Manager, bei denen der Migrationszyklus auf 30~Sekunden festgelegt ist.
+%Zur Erlangung eines aussagekräftigen Ergebnisses wurden bei den ersten drei Messreihen insgesamt %2000~Nachrichten übertragen.
+%Ab 120~Nachrichten pro Minute und Host erhöht sich die Gesamtanzahl der Nachrichten auf 10.000, sodass hier eine Steigerung in der Anzahl möglicher Migrationszyklen erkennbar ist.
+%So wird die gesamte Ausführungszeit der unterschiedlichen Messreihen angepasst.
+Die ersten beiden Messreihen zeigen eine geringe Erfolgsrate bei der Bereitstellung des Dienstes auf der richtigen Position im Netzwerk.
+Durch die wenigen Nachrichten, die innerhalb eines Migrationszyklus gesendet werden, wird der Dienst oft von den Service~Manager zwischen den Objekten migriert.
+Es folgt eine stetige Steigerung der Erfolgsrate je mehr Nachrichten pro Minute und Host gesendet werden.
+Mögliche Migrationen werden vom Service~Manager immer öfters abgelehnt, was auf der Tatsache beruht, dass der dienstausführende Host laut der Überprüfung bereits der besten Host für die Bereitstellung ist oder der Schwellwert von 2\% noch nicht überschritten wurde, um eine Migration durchzuführen (vgl.~Kapitel~\ref{sub:entwurfsmuster_und_architektur_network_router}).
+Die Messreihe mit 60~Nachrichten pro Minute und Host stellt einen kleinen Ausreißer in den Messungen dar, denn hier ist im Vergleich zu den vorherigen Messreihen vor allem eine Steigerung in der Ablehnung aufgrund der Schwelle zu vermerken.
+Die Steigerung der Ablehnung von Migrationen bei den weiteren Messreihen zeigen, dass die Bereitstellung eines Dienstes sehr von der Anzahl der gesendeten Nachrichten pro Minute und Host abhängig ist, zumindest solange innerhalb eines Zyklus alle Clients gleichmäßige Datenmengen und Anfragen senden.
+Aufgrund dieser Anwendungsabhängigkeit wird jedoch der Wert 10 als Standard für die Anzahl der gesendeten Nachrichten pro Minute und Host in den weiteren Messungen festgehalten. 
+Durch die geringe Nachrichtenrate und der Gesamtanzahl von 2.000~Nachricht führen die Service~Manager mehr wünschenswerte Migrationen durch und erlauben einen Test aller Komponenten des Service~Managers.
+Außerdem werden die einzelnen Messreihen mit diesen Werten jeweils eine Zeit von über drei Stunden in Anspruch nehmen.
+So kann sichergestellt werden, dass sich das virtuelle Netzwerk durch die anfängliche Erstellung von Routen eingependelt hat.
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase2_client_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis} [
+	boxplot chart style,
+	ymode=log,	
+	ymax=150,
+	ymin=0.05,
+	xtick={1, 2, 3, 4, 5},
+	xticklabels={10,30,60,180,300},
+	ylabel={\yaxislogscaletext},
+	xlabel={Zeit eines Migrationszyklus in Sekunden}]
+	\pgfplotsinvokeforeach{0,...,4} {
+		\pgfplotstablegetelem{#1}{om}\of\datatable
+		\edef\outliers{\pgfplotsretval}
+		\addplot[mark=x,
+		boxplot prepared from table={
+			table=\datatable,
+			row=#1,
+			lower whisker=lw,
+			upper whisker=uw,
+			lower quartile=lq,
+			upper quartile=uq,
+			median=med
+		}, boxplot prepared
+		]
+		coordinates {\outliers};
+	}
+	\end{axis}
+	\end{tikzpicture}
+	\caption[Vergleich der RTT gegenüber der Zeit eines Migrationszyklus]{Vergleich der RTT gegenüber der Zeit eines Migrationszyklus. In dem Testfall wird die Zeit eines Migrationszyklus immer weiter erhöht, bis keine Veränderungen mehr festzustellen sind.}
+	\label{fig:testcase2_client_results}
+\end{figure}
+
+\begin{figure}[htb]
+\centering
+\pgfplotstableread [col sep=semicolon]{./tables/testcase2_server_results.csv} {\datatable}
+\begin{tikzpicture}
+	\begin{axis}[
+	grouped bar chart style,
+	y axis percentage style,
+	xticklabels={10,30,60,180,300},
+	ylabel={\yaxispercentagetext},
+	xlabel={Zeit eines Migrationszyklus in Sekunden}]
+	
+	\addplot [style={bblue,fill=bblue,mark=none}] table[x expr=\coordindex+1, y=migrations_done_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={oorange,fill=oorange,mark=none}]	table[x expr=\coordindex+1,
+	y=migration_rejected_mig_tresh_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={ggreen,fill=ggreen,mark=none}] table[x expr=\coordindex+1, y=migration_rejected_num1_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={rred,fill=rred,mark=none}] table[x expr=\coordindex+1, y=migrations_error_percentage, col sep=semicolon] {\datatable};
+	
+	\legend{Vollstände Migration,Abgelehnte Migration (Schwelle),Abgelehnte Migration (Bester Server),Migrationsfehler}
+	\end{axis};
+\end{tikzpicture}
+\caption[Vergleich der Migrationen gegenüber der Zeit eines Migrationszyklus]{Vergleich der Migrationen gegenüber der Zeit eines Migrationszyklus. \graphicserverdescriptionshort}
+\label{fig:testcase2_server_results}
+\end{figure}
+
+Im zweiten Testfall soll die Zeit eines Migrationszyklus des Service~Managers immer weiter erhöht werden, während die anderen Variablen festgelegt sind (vgl.~Abbildungen~\ref{fig:testcase2_client_results}-\ref{fig:testcase2_server_results}).
+Wie zuvor im ersten Testfall festgehalten wurde, sollen die 11~Performance-Clients mit einer konstanten Nachrichtenrate 10~Nachrichten pro Minute an den Dienst senden.
+Die übertragene Datenmenge auf Applikationsebene liegt für jede Nachricht bei 1.460~Byte.
+Insgesamt werden wieder 2.000~Nachrichten von einem Performance-Client pro Messreihe übermittelt.
+Für die Vergleichbarkeit entspricht hier die zweite Messreihe mit einem Migrationszyklus von 30~Sekunden der ersten Messreihe aus dem ersten Testfall (vgl.~Abbildung~\ref{fig:testcase1_client_results}).
+\\
+Die Abbildung~\ref{fig:testcase2_client_results} zeigt die Ergebnisse der Clients während der Nachrichtenübermittlung.
+Der Migrationszyklus wurde zwischen den Messreihen von 10~Sekunden bis auf 300~Sekunden immer weiter erhöht.
+Durch die konstante Nachrichtenrate zeigt sich aus der Sicht der Clients auf die \gls{RTT} insgesamt nur eine moderate Veränderungen zwischen den Messreihen, lediglich eine leichte Minimierung bei den Ausreißern ist feststellen.
+Diese Minimierungen lassen sich jedoch auch durch Schwankungen zwischen den einzelnen Messreihen erklären.
+Insgesamt haben die Änderungen des Migrationszyklus in diesem Testfall kaum einen Einfluss auf die \gls{RTT} der Nachrichten.
+Zum einen ist durch die geringe Nachrichtenrate und der zur \gls{MSS} passenden Nachrichtengröße das Netzwerk nicht ausgelastet.
+Zum anderen muss beachtet werden, dass das hier untersuchte Netzwerk nicht verlustbehaftet ist und alle Nachrichten garantiert den Dienst erreichen.
+Bei einem verlustfreien Netzwerk dieser Größe und geringer Nachrichtengröße sind die möglichen Routen zwischen den Clients und den Diensten sehr ausgeglichen.
+In einem Netzwerk mit verlustbehafteten Kanten könnte das Ergebnis hingegen anders ausfallen (vgl.~Testfälle~5-6 und Abbildungen~\ref{fig:testcase5_client_results}-\ref{fig:testcase6_server_results}).
+\\
+Im Vergleich zur Betrachtung aus der Sicht der Clients ist die Veränderung des Migrationszyklus aus Sicht der Service~Manager deutlich wahrnehmbar, wie in Abbildung~\ref{fig:testcase2_server_results} zu sehen ist.
+Durch die schrittweise Erhöhung des Migrationszyklus wird zunächst die Gesamtanzahl möglicher Migrationen deutlich von 1.184 bis auf ein Minimum von 41 verringert.
+Im Vergleich zum ersten Testfall zeigt sich weiterhin auch ein signifikanter Trend in den gemessenen Ergebnissen.
+Mit steigender Zeit eines Migrationszyklus erhöht sich prozentual die Ablehnung einer Migration aufgrund der Schwelle, die bei allen Testfällen und Messreihen 2\% beträgt.
+Dies deutet darauf hin, dass in dem Netzwerk zwei Objekte existieren, die sich beide mittig (im Sinne der Leistungsmetrik) zwischen den Clients befinden.
+Die Schwelle verhindert eine fluktuierende Migration des Dienstes zwischen den beiden Objekten (vgl.~\ref{sub:entwurfsmuster_und_architektur_network_router}).
+Darüber hinaus hat die Erhöhung des Migrationszyklus zur Folge, dass das Auffinden des besten Servers immer präziser wird, denn Migrationen werden prozentual nicht mehr so häufig durchgeführt.
+Diese Erkenntnis ist einfach zu begründen.
+Der erste dienstausführende Service~Manager sammelt mit einem größeren Migrationszyklus bereits so viele auswertbare Informationen über das Verhalten der anfragenden Clients, dass er nach einem Zyklus bereits ein optimales Gesamtbild über diese besitzt.
+Würden die Clients mit einer geringeren Nachrichtenrate als 10 Nachrichten pro Minute senden, würde sich das Phänomen wieder auflösen und der Service~Manager würde prozentual öfters den Dienst erneut migrieren.
+Dies zeigt, dass die Zeit eines Migrationszyklus der Anwendungsart des Dienstes entsprechend optimiert werden könnte.
+Anwendungen mit einer geringen Übertragungsrate von Client-Nachrichten benötigen bei dem Service~Manager einen größeren Migrationszyklus ihrer Dienste.
+Bei einer größeren Nachrichtenrate kann die Zeit eines Migrationszyklus entsprechend geringer ausfallen, da binnen eines Zyklus genug auswertbare Informationen gesammelt werden können.
+Wie bereits im ersten Testfall wird die Zeit für einen Migrationszyklus für die nächsten Testfälle weiterhin bei 30~Sekunden festgehalten.
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase3_client_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis} [
+	boxplot chart style,
+	ymode=log,
+	ymax=1500,
+	ymin=0.003,
+	xtick={1, 2, 3, 4, 5},
+	xticklabels={1.460,7.300,14.600,29.200,43.800},
+	ylabel={Normierte durchschnittliche RTT in ms [log Skala]},
+	xlabel={Größe der gesendeten Nachrichten auf Applikationsebene in Byte}]
+	\pgfplotsinvokeforeach{0,...,4} {
+		\pgfplotstablegetelem{#1}{om}\of\datatable
+		\edef\outliers{\pgfplotsretval}
+		\addplot[mark=x,
+		boxplot prepared from table={
+			table=\datatable,
+			row=#1,
+			lower whisker=lw,
+			upper whisker=uw,
+			lower quartile=lq,
+			upper quartile=uq,
+			median=med
+		}, boxplot prepared
+		]
+		coordinates {\outliers};
+	}
+	\end{axis}
+	%\draw[thick,black,decorate,decoration={brace,amplitude=12pt}] ([yshift=-0.5cm, xshift=3cm]current axis.north west) -- ([yshift=-0.5cm, xshift=-1cm]current axis.north east) node[midway, above,yshift=12pt,]{Normiert auf gleiche Nachrichtengröße};
+	\end{tikzpicture}
+	\caption[Vergleich der RTT gegenüber der Nachrichtengröße auf Applikationsebene]{Vergleich der RTT gegenüber der Nachrichtengröße auf Applikationsebene. In dem Testfall wird die Größe der von den Clients gesendeten Nachrichten immer weiter erhöht, bis keine Veränderungen mehr festzustellen sind. Die Ergebnisse der Messreihen, bei denen pro Nachrichten mehr als 1.460~Byte gesendet werden, sind für eine Vergleichbarkeit mit dem jeweiligen Faktor 1.460/Nachrichtengröße normiert dargestellt.}
+	\label{fig:testcase3_client_results}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase3_server_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis}[
+	grouped bar chart style,
+	y axis percentage style,
+	xticklabels={1.460,7.300,14.600,29.200,43.800},
+	ylabel={\yaxispercentagetext},
+	xlabel={Größe der gesendeten Nachrichten auf Applikationsebene in Byte}]
+	
+	\addplot [style={bblue,fill=bblue,mark=none}] table[x expr=\coordindex+1, y=migrations_done_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={oorange,fill=oorange,mark=none}]	table[x expr=\coordindex+1,
+	y=migration_rejected_mig_tresh_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={ggreen,fill=ggreen,mark=none}] table[x expr=\coordindex+1, y=migration_rejected_num1_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={rred,fill=rred,mark=none}] table[x expr=\coordindex+1, y=migrations_error_percentage, col sep=semicolon] {\datatable};
+	
+	\legend{Vollstände Migration,Abgelehnte Migration (Schwelle),Abgelehnte Migration (Bester Server),Migrationsfehler}
+	\end{axis};
+	\end{tikzpicture}
+	\caption[Vergleich der Migrationen gegenüber der Größe der gesendeten Nachrichten auf Applikationsebene]{Vergleich der Migrationen gegenüber der Größe der gesendeten Nachrichten auf Applikationsebene. \graphicserverdescriptionshort}
+	\label{fig:testcase3_server_results}
+\end{figure}
+
+Der dritte Testfall vergleicht die gesendete Nachrichtengröße auf Applikationsebene, indem die sie zwischen den Messreihen ausgehend von der \gls{MSS} mit 1.460~Bytes um die Faktoren 5, 10, 20 und 30 schrittweise erhöht werden (vgl.~Abbildungen~\ref{fig:testcase3_client_results}-\ref{fig:testcase3_server_results}).
+Die 11~Clients senden die insgesamt 2.000~Nachrichten bei allen Messreihen mit einer konstanten Nachrichtenrate von 10~Nachrichten pro Minute.
+Die Service~Manager auf den dienstausführenden Objekten führen die Migrationen in einem Zyklus über 30~Sekunden durch.
+Aufgrund der Vergleichbarkeit entspricht die erste Messreihe des Testfalls wieder den Messreihen aus den vorherigen Testfällen mit 1.460~Bytes Nachrichten bei 10~Nachrichten pro Minute und Host sowie 30~Sekunden Zeit eines Migrationszyklus.
+\\
+Die Abbildung~\ref{fig:testcase3_client_results} zeigt die Ergebnisse der Clients des Testfalls.
+Damit die Messreihen auch untereinander vergleichbar sind, ist bei den Messreihen jeweils eine Normierung um ihren gegebenen Faktor vorgenommen worden.
+Die Ergebnisse der Messreihen stellen somit die normierte \gls{RTT} dar, wie sie für ein Datenpaket zu erwarten wäre.
+Ohne Normierung wäre erkennbar, dass die Erhöhung der gesendeten Nachrichtengröße eine höhere durchschnittliche \gls{RTT} zur Folge hat.
+Diese wäre in der Abbildung linear zum Faktor der jeweiligen Messreihe zu verzeichnen.
+Durch die Normierung kann hingegen eine gleichermaßen konstante Differenz in der \gls{RTT} zwischen der Messreihe, bei der die Nachrichtengröße 1.460~Bytes beträgt, und den anderen Messreihen erfasst werden.
+Diese konstante Differenz ist durch entstehende \gls{Mehrkosten} begründbar.
+Eine Nachrichten, die mehr Daten als die \gls{MSS} beinhaltet, muss in mehrere kleinere Pakete aufgeteilt werden.
+Diese kleineren Pakete werden mit eigenen Protokollheadern einzeln durch das Netzwerk verschickt und schließlich wieder auf Applikationsebene zusammengefügt mit der Folge, dass um den jeweiligen Faktor der Messreihen zusätzliche Daten über das Netzwerk gesendet werden müssen.
+Zu beachten ist jedoch der am unteren Whisker erkennbare Fehler durch die Normierung.
+Wie bereits bei den vorherigen Testfällen, wird das Minimum in der \gls{RTT} durch die Bereitstellung des Dienstes auf einem Host erreicht, auf dem auch ein Client ausgeführt wird.
+Dieses Minimum wäre eigentlich die untere Schranke in der \gls{RTT}, die durch die Normierung jedoch ebenfalls abgesenkt wird.
+\\
+Die Abbildung~\ref{fig:testcase3_server_results} vergleicht die Migrationen der Service~Manager im dritten Testfall.
+Da die Clients aufgrund der konstanten Nachrichtenrate durchschnittlich gleichmäßig senden, ist hier kaum eine Veränderung zwischen den Messreihen zu vernehmen.
+Die Wahrscheinlichkeit, dass ein Service~Manager den Dienst auf ein anderes dienstausführendes Objekt migriert, liegt bei allen Messreihen ungefähr zwischen 50\% und 65\%.
+Daraus ist zu schließen, dass die Migrationen der Service~Manager nicht von der Last im gesamten Netzwerk abhängen.
+Dies ist sehr positiv, da es bedeutet, dass bei konstanter Erhöhung der Nachrichtengröße die Service~Manager gleich reagieren.
+Nur bei einer Veränderung des Anfrageschemas durch die Clients könnte sich das Migrationsverhalten ändern.
+Die Veränderung des Anfrageschemas könnte beispielsweise durch die Einführung einer größeren Unregelmäßigkeit in dem Nachrichtenversand zwischen den Clients und dem Dienst geschaffen werden.
+Dies könnte durch Veränderung der Wahrscheinlichkeit zur Leerung des Pausenkontos \(P_\text{Leerung}\) (vgl.~\ref{sec:performance_client_und_dienst}) geschehen, durch eine Anpassung des Clientverhaltens, wie es im vierten Testfall zu sehen ist, oder aber durch eine Erhöhung der gesendeten Nachrichtengröße bei einzelnen Clients.
+Für die abschließenden Testfälle~5~und~6, bei denen die Verbindungen im Netzwerk verlustbehaftet sind, soll die Nachrichtengröße auf 14.600~Bytes angehoben werden.
+Zum einen wird so der Fall getestet, dass pro Nachricht mehr als ein Paket übermittelt wird.
+Zum anderen ist das Netzwerk durch die erhöhte Nachrichtengröße im Vergleich zu kleineren Nachrichten ausgelasteter.
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase4_client_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis} [
+	boxplot chart style,
+	ymode=log,
+	ymax=15000,
+	ymin=0.01,
+	xtick={1, 2, 3, 4},
+	xticklabels={14.600/1,1.460/10,146/100,49/300},
+	ylabel={Normierte durchschnittliche RTT in ms [log Skala]},
+	xlabel={Größe der gesendeten Nachrichten auf Applikationsebene in Byte /\\ Anzahl der gesendeten Nachrichten pro Minute und Host}]
+	\pgfplotsinvokeforeach{0,...,3} {
+		\pgfplotstablegetelem{#1}{om}\of\datatable
+		\edef\outliers{\pgfplotsretval}
+		\addplot[mark=x,
+		boxplot prepared from table={
+			table=\datatable,
+			row=#1,
+			lower whisker=lw,
+			upper whisker=uw,
+			lower quartile=lq,
+			upper quartile=uq,
+			median=med
+		}, boxplot prepared
+		]
+		coordinates {\outliers};
+	}
+	\end{axis}
+	%\draw[thick,black,decorate,decoration={brace,amplitude=12pt}] ([yshift=-0.5cm, xshift=3.5cm]current axis.north west) -- ([yshift=-0.5cm, xshift=-1cm]current axis.north east) node[midway, above,yshift=12pt,]{Normiert auf gleiche Nachrichtengröße};
+	\end{tikzpicture}
+	\caption[Vergleich der RTT gegenüber der Nachrichtengröße und Nachrichtenrate auf Applikationsebene]{Vergleich der RTT gegenüber der Nachrichtengröße und Nachrichtenrate auf Applikationsebene. In dem Testfall wird die Größe der von den Clients gesendeten Nachrichten über die Messreihen und die durchschnittliche Nachrichtenrate so angepasst, dass der Durchsatz pro Client immer konstant bleibt. Die Ergebnisse der Messreihen, bei denen pro Nachrichten mehr als 1.460~Byte gesendet werden, sind für eine Vergleichbarkeit mit dem jeweiligen Faktor 1.460/Nachrichtengröße normiert dargestellt.}
+	\label{fig:testcase4_client_results}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase4_server_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis}[
+	grouped bar chart style,
+	y axis percentage style,
+	xticklabels={14.600/1,1.460/10,146/100,49/300},
+	ylabel={\yaxispercentagetext},
+	xlabel={Größe der gesendeten Nachrichten auf Applikationsebene in Byte /\\Anzahl der gesendeten Nachrichten pro Minute und Host},
+	legend style={at={(0.5,-0.275)}}]
+	
+	\addplot [style={bblue,fill=bblue,mark=none}] table[x expr=\coordindex+1, y=migrations_done_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={oorange,fill=oorange,mark=none}] table[x expr=\coordindex+1,
+	y=migration_rejected_mig_tresh_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={ggreen,fill=ggreen,mark=none}] table[x expr=\coordindex+1, y=migration_rejected_num1_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={rred,fill=rred,mark=none}] table[x expr=\coordindex+1, y=migrations_error_percentage, col sep=semicolon] {\datatable};
+	
+	\legend{Vollstände Migration,Abgelehnte Migration (Schwelle),Abgelehnte Migration (Bester Server),Migrationsfehler}
+	\end{axis};
+	\end{tikzpicture}
+	\caption[Vergleich der Migrationen bei einer durchweg konstanten Nachrichtenrate]{Vergleich der Migrationen bei einer durchweg konstanten Nachrichtenrate. \graphicserverdescriptionshort}
+	\label{fig:testcase4_server_results}
+\end{figure}
+
+In dem vierten und damit letztem Testfall, das auf das Netzwerk ohne Verlustrate aufbaut, wird eine Kombination aus dem ersten und dem dritten Testfall dargestellt (vgl.~Abbildungen~\ref{fig:testcase4_client_results}-\ref{fig:testcase4_server_results}).
+Dabei wird der Ansatz verfolgt, dass über alle Messreihen hinweg ein gleichbleibender Durchsatz bestehen bleibt.
+Das bedeutet, dass bei Verringerung der Nachrichtengröße die Anzahl Nachrichten pro Minute und Host entsprechend erhöht werden muss.
+Umgekehrt gilt dies bei Erhöhung der Nachrichtengröße.
+Der durchschnittliche Durchsatz liegt in dem Testfall bei 14.600~Bytes pro Minute und Host.
+Die Zeit eines Migrationszyklus liegt wie in den anderen Testfällen ebenfalls bei 30~Sekunden.
+Die Referenzmessreihe mit 1.460~Bytes als Nachrichtengröße und 10~Nachrichten pro Minute und Host ist in diesem Testfall in der zweite Messreihe dargestellt.
+Bei den letzten drei Messreihen mit 300 Nachrichten pro Minute und Host ist mit 10.000 wie zuvor eine erhöhte Anzahl der gesamten Nachrichten zur Verlängerung der Ausführungszeit vorzufinden.
+\\
+In Abbildung~\ref{fig:testcase4_client_results} zeigt sich bei der Untersuchung der normierten Ergebnisse von den Clients der gleiche Effekt, der auch zuvor bereits festgestellt wurde.
+Die schrittweise Erhöhung der Nachrichten pro Minute und Host (Messreihe~3~und~4) belastet zum einen das Netzwerk analog zum ersten Testfall (vgl~Abbildung~\ref{fig:testcase1_client_results}).
+Zum anderen führt die Erhöhung der Nachrichtengröße (Messreihe~1) zu einer höheren Anzahl gesendeter Pakete und so zu einer erhöhten \gls{RTT} (vgl.~Abbildung~\ref{fig:testcase3_client_results}).
+Auch hier ist der durch die Normierung niedrige untere Whisker zu beachten.
+\\
+Interessanter ist in diesem Testfall jedoch die Auswertung der Service~Manager in Abbildung~\ref{fig:testcase4_server_results}.
+In der ersten Messreihe ist deutlich die kontinuierliche Wanderung des Dienstes zwischen verschiedenen Service~Managern im virtuellen Netzwerk festzustellen.
+Innerhalb eines Migrationszyklus gehen genau so viele Nachrichten von unterschiedlichen Clients beim Dienst ein, dass er auf der Grundlage dieser letzten Nachrichten fast immer an einer anderen Position besser geeignet wäre.
+Die geringe Nachrichtenrate von einer Nachricht pro Minute und Host und den einhergehenden sehr langen Wartezeiten zwischen den einzelnen Nachrichten führt dazu, dass der Dienst in über 90\% der 3.995~Fälle migriert wird.
+Dies bekräftigt nochmals die Aussage, die im zweiten Testfall bereits bezüglich der Migrationszeit getroffen wurde (vgl.~Abbildung~\ref{fig:testcase2_server_results}).
+Bei einer seltenen Verwendung des Dienstes durch die Clients muss die Migrationszeit an das Anfrageverhalten der Clients angepasst werden.
+Dies führt schließlich zu einer Reduktion der Wanderungen im Netzwerk, wie an den anderen Messreihen dieses Testfalls zu erkennen ist.
+Schrittweise werden mehr Migrationen abgelehnt, weil der beste Host zur Ausführung des Dienstes bereits gefunden wurde.
+
+Abschließend erfolgt die Untersuchung der Dienstemigration durch den Service~Manager in den in Kapitel~\ref{sec:positionierung_der_autonomen_dienste} aufgestellten Szenarien.
+In den folgenden beiden Testfällen wird dies jedoch nicht in einem verlustfreien Netzwerk geschehen, sondern in einem verlustbehafteten.
+Die Besonderheit des verlustbehafteten Netzwerks liegt in der genaueren Emulation kabelloser Verbindungen, denn bereits aufgebaute Verbindungen zwischen zwei Objekten im Netzwerk können während der Übertragung abbrechen und auch bereits gesendete Nachrichten verloren gehen.
+Das in Kapitel~\ref{sub:entwurfsmuster_und_architektur_service_handler} beschrieben Verfahren der Dienstsignalisierung und der Diensterkennung hat hierbei eine besondere Bedeutung für die Datenerfassung der Performance-Clients.
+Die dort beschriebenen Verluste der Broadcast-Nachrichten können in diesen Testfällen fortwährend bei den Messungen der \gls{RTT} geschehen, was den Informationsverlust über eine stattgefundene Migration und das damit verbundene momentane Wissen über den aktuellen Dienst zur Folge hat.
+Ist die Verbindung einer Messnachricht zum Dienst erst einmal hergestellt, werden die Nachrichten größtenteils ohne weitere Probleme übertragen.
+Doch die Probleme entstehen bereits beim Aufbau der Verbindung.
+Wird das in Kapitel~\ref{sub:entwurfsmuster_und_architektur_service_handler} beschriebene Maximum von zehn~Fehlversuchen beim Aufbau einer Verbindung und dem anschließenden Ausbleiben von \inlinecode{who\_is\_answer}-Nachrichten erreicht, bricht der Performance-Client als Lösung des Problems mit der \gls{RTT}-Messung bei der Nachricht ab, sodass diese nicht in die Auswertung der durchschnittlichen \gls{RTT} aller erfolgreichen Nachrichten einfließen kann (vgl.~Abbildungen~\ref{fig:testcase5_client_results}~und~\ref{fig:testcase6_client_results}).
+Da die fehlerhaften Nachrichtenübermittlungen jedoch nicht vollständig ausgeschlossen werden sollen, werden diese anschließend in beiden Testfällen über eine weitere Auswertung anhand der Tabellen~\ref{tab:testcase5_mean_stdev}~und~\ref{tab:testcase6_mean_stdev} beschrieben.
+\\
+Das verlustbehaftete Netzwerk im fünften und sechsten Testfall emuliert die zwei geforderten \gls{IoT}-Segmente aus je 20~Objekten respektive Hosts, die über zwei Gateways und einem gemeinsamen Internetknoten miteinander verbunden sind (vgl.~Abbildung~\ref{fig:beschnittener_graph_miot_emulation_segmentiertes_iot}).
+Die mit dem Internet verbundenen Knoten sind alle über eine Verbindung mit einem \gls{Durchsatz} von 50~Mbit/s miteinander verbunden.
+Die Clients und Service~Manager in diesem Netzwerk verwenden die in den ersten drei Testfällen festgelegten Werte für die verschiedenen Variablen bei allen Messreihen:
+\begin{itemize}
+	\item Die Performance-Clients senden 10 Nachrichten pro Minute und Host.
+	\item Die Migrationszykluszeit des Service~Managers ist auf 30~Sekunden festgelegt.
+	\item Die Nachrichtengröße auf Applikationsebene der Clients umfasst 14.600~Bytes.
+\end{itemize}
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase5_client_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis} [
+	boxplot chart style,
+	%x axis large text label,
+	ymode=log,
+	ymax=150000,
+	ymin=0.05,
+	xtick={1, 2, 3, 4, 5, 6},
+	xticklabels={(1),(1a),(2),(3),(4),(5)},
+	ylabel={\yaxislogscaletext},
+	xlabel={Szenario in der simulierten Testumgebung}]
+	\pgfplotsinvokeforeach{0,...,5} {
+		\pgfplotstablegetelem{#1}{om}\of\datatable
+		\edef\outliers{\pgfplotsretval}
+		\addplot[mark=x,
+		boxplot prepared from table={
+			table=\datatable,
+			row=#1,
+			lower whisker=lw,
+			upper whisker=uw,
+			lower quartile=lq,
+			upper quartile=uq,
+			median=med
+		}, boxplot prepared
+		]
+		coordinates {\outliers};
+	}
+	\end{axis}
+	\end{tikzpicture}
+	\caption[Vergleich der RTT zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten IoT mit fünf Clients aus einem IoT-Segment]{Vergleich der \gls{RTT} zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten \gls{IoT} mit fünf Clients aus einem \gls{IoT}-Segment. Die Szenarien stellen eine schrittweise Veränderung der Positionierung eines Dienstes im \gls{IoT} dar.}
+	\label{fig:testcase5_client_results}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase5_server_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis}[
+	grouped bar chart style,
+	y axis percentage style,
+	%x axis large text label,
+	xticklabels={(1),(1a),(2),(3),(4),(5)},
+	ylabel={\yaxispercentagetext},
+	xlabel={Szenario in der simulierten Testumgebung}]
+	
+	\addplot [style={bblue,fill=bblue,mark=none}] table[x expr=\coordindex+1, y=migrations_done_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={oorange,fill=oorange,mark=none}] table[x expr=\coordindex+1,
+	y=migration_rejected_mig_tresh_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={ggreen,fill=ggreen,mark=none}] table[x expr=\coordindex+1, y=migration_rejected_num1_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={rred,fill=rred,mark=none}] table[x expr=\coordindex+1, y=migrations_error_percentage, col sep=semicolon] {\datatable};
+	
+	\legend{Vollstände Migration,Abgelehnte Migration (Schwelle),Abgelehnte Migration (Bester Server),Migrationsfehler}
+	\end{axis};
+	\end{tikzpicture}
+	\caption[Vergleich der Migrationen zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten IoT mit fünf Clients aus einem IoT-Segment]{Vergleich der Migrationen zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten \gls{IoT} mit fünf Clients aus einem \gls{IoT}-Segment. Die Szenarien stellen eine schrittweise Veränderung der Positionierung eines Dienstes im \gls{IoT} dar. Die Szenarien~3-5 sind fixiert, weshalb keine Migrationen des Dienstes stattfinden und sich dieser immer an der \glqq besten\grqq{} Position im \gls{IoT} befindet. \graphicserverdescriptionshort}
+	\label{fig:testcase5_server_results}
+\end{figure}
+
+Im fünften Testfall senden zunächst fünf zufällig im \gls{IoT}-Segment~A verteilte Performance-Clients Nachrichten zum Dienst.
+Der Testfall soll überprüfen, ob die Bereitstellung eines wandernden Dienstes innerhalb eines \gls{IoT}-Segments zu einer Reduktion der \gls{RTT}, der Verlustrate und der \glspl{Hop} im Vergleich zu fixierten Diensten an definierten Positionen führt (vgl.~Kapitel~\ref{sec:positionierung_der_autonomen_dienste}).
+Während die Performance-Clients aufgrund der Vergleichbarkeit in allen Messreihen ihre Position beibehalten, wird bei der Bereitstellung der Service~Manager unterschieden auf welchen Hosts diese ausgeführt werden.
+Die erste Messreihe erlaubt Migrationen des Dienstes auf allen Hosts im \gls{IoT}-Segment~A.
+Diese beinhalten auch die Hosts, die als Performance-Clients deklariert sind, und den Host, der als Gateway bestimmt ist.
+Analog gilt dies für die sechste Messreihe~(Szenario~5), nur dass sich dort die möglichen dienstausführenden Hosts im \gls{IoT}-Segment~B befinden.
+Bei der zweiten Messreihe~(Szenario~1a) werden die Hosts mit dem Performance-Client aus der Menge der potentiell dienstausführenden Hosts entfernt, sodass der Dienst nicht an dieselben Positionen migrieren werden kann.
+Die erste Ausführung des Dienstes übernimmt in diesen Messreihen der Gateway-Knoten des jeweils betrachteten \gls{IoT}-Segments.
+Die anderen Messreihen (Szenarien~2-4) dienen dem Vergleich der Migration zu klassischen Systemen.
+So wird der Dienst hier an fixierten Positionen gesetzt und verrichtet von dort seine Aufgabe, zum einen sind es die beiden Hosts am Gateway der \gls{IoT}-Segmente sowie der Internetknoten.
+In diesem Testfall wird angenommen, dass der Dienst in den ersten beiden Messreihen immer in die Richtung der Performance-Clients migriert wird, wie es bereits in den anderen Testfällen festzustellen ist.
+Durch die Reduktion der Menge dienstausführender Hosts im zweite Szenario ist hier eine Erhöhung der \gls{RTT} zu erwarten, da Performance-Client und der Dienst sich nicht mehr zur gleichen Zeit auf demselben Host befinden können und sehr kurze \glspl{RTT} ohne externen Verbindungsaufbau wegfallen.
+\\
+Die Abbildung~\ref{fig:testcase5_client_results} zeigt die Messungen der \gls{RTT} der Clients.
+Dabei ist ein deutlicher Unterschied zwischen der ersten Messreihe~(Szenario~1), bei der eine Wanderung des Dienstes im \gls{IoT}-Segment~A durchgeführt wird, und den anderen Messreihen zu verzeichnen.
+Der Median der \gls{RTT} ist in der ersten Messreihe, bei der eine Migration stattfindet, bereits um Faktor~20 im Vergleich zu den Messreihen~3-6~(Szenario~2-5) geringer, bei denen sich die dienstausführenden Hosts an fixierten Positionen befinden.
+Doch auch die zweite Messreihe zeigt eine leichte Verbesserung um Faktor~3 im Vergleich zur Bereitstellung des Dienstes an fixierten Positionen, wie Gateways oder im Internet.
+Auch die maximalen Werte innerhalb des Interquartilsabstandes sind bei der ersten Messreihe um Faktor~4 geringer als die der zweite Messreihe sowie um Faktor~10 geringer als die Messreihen mit fixierten Positionen.
+Die Ausreißer im System lassen sich hier durch die in der Software definierten Timeouts von 60~Sekunden sowie durch die Anfragen an den Floodlight \gls{SDN}-Controller genau erklären.
+Die Unterschiede der Minima zwischen der ersten und zweiten Messreihe um Faktor~40 bestätigen hier die Annahme der höheren \gls{RTT} in der zweiten Messreihe aufgrund des Wegfalls derselben Hosts für die Ausführung von Clients und dem Dienst.
+Ein negativ zu bewertender Punkt für die Migration zeigt sich in der Größe des Interquartilsabstandes der ersten Messreihe.
+Die Differenz ist hier deutlich höher als bei allen anderen Messreihen, die Messungen streuen mehr.
+Unterschiede bei der Bereitstellung von Diensten lassen sich bei den Messreihen der Szenarien~2-5 kaum feststellen, es sind lediglich leichte Schwankungen der minimalen Messwerte in der dritten Messreihe zu vernehmen.
+Dies zeigt deutlich, dass die \gls{RTT} von den Verbindungseigenschaften des \glsmgen{IoT} abhängig ist und nicht von denen des beständigen Internets.
+Hier zeigt sich auch, dass die sechste Messreihe~(Szenario~5) kaum eine Verbesserung aufweist.
+Die Wanderungen in einem anderen \gls{IoT}-Segment haben keine Auswirkungen auf die \gls{RTT} zwischen Clients und dem Dienst.
+
+\begin{table}[h]
+	\centering
+	\pgfkeys{/pgf/number format/.cd,
+		use comma, fixed, fixed zerofill, precision=2, 1000 sep={.}}
+	\pgfplotstabletypeset[
+		col sep=semicolon,
+		columns/rtt_mean/.style={column name=\(M_{\text{RTT}}\) (in ms), column type/.add={}{|}},
+		columns/rtt_stdev/.style={column name=\(SD_{\text{RTT}}\) (in ms), column type/.add={}{|}},
+		columns/reconnection_mean/.style={column name=\(M_{\text{Fehlvers.}}\), column type/.add={}{|}},
+		columns/reconnection_stdev/.style={column name=\(SD_{\text{Fehlvers.}}\), column type/.add={}{|}},
+		columns/hop_mean/.style={column name=\(M_{\text{Hop}}\), column type/.add={}{|}},
+		columns/hop_stdev/.style={column name=\(SD_{\text{Hop}}\)},
+		create on use/szenario/.style={
+			create col/set list={1,1a,2,3,4,5}
+		},
+		columns/szenario/.style={column name=Szenarien,string type,column type/.add={}{|}},
+		every head row/.style={
+			before row=\toprule,
+			after row=\midrule
+		},
+		every last row/.style={
+			after row=\bottomrule
+		},
+		columns={szenario,rtt_mean,rtt_stdev,reconnection_mean,reconnection_stdev,hop_mean,hop_stdev},
+	]{./tables/testcase5_client_results.csv}
+	\caption[Vergleich der Szenarien im fünften Testfall anhand von Leistungsmetriken über Mittelwert und Standardabweichung]{Vergleich der Szenarien im fünften Testfall anhand von Leistungsmetriken über Mittelwert und Standardabweichung. Der Vergleich findet über die der Leistungsmetriken \gls{RTT}, \gls{Hop} und der Fehlversuche bei den Messungen der Performance-Clients statt.}
+	\label{tab:testcase5_mean_stdev}
+\end{table}
+
+Auch anhand des Mittelwerts \(M_{\text{RTT}}\) ist die Verbesserung in der \gls{RTT} durch die Bereitstellung eines wandernden Dienstes in einem verlustbehafteten \gls{IoT} zu erkennen, allerdings ist der Unterschied zwischen den verschiedenen Szenarien deutlich geringer als bei dem Median.
+Der über alle Messreihen hinweg hohe Standardabweichung deutet zusätzlich auf eine hohe Anzahl von Ausreißern hin (vgl.~Tabelle~\ref{tab:testcase5_mean_stdev}).
+Eine durch die Migration bedingte Verschlechterung zeigt der Mittelwert \(M_{\text{Fehlversuch}}\) in den ersten beiden Messreihen.
+In beiden Messreihen verursachen die Migrationen den Informationsverlust über den aktuell dienstausführenden Host und einhergehend fehlschlagende Verbindungsversuche.
+Interessant ist auch ein Vergleich in der Anzahl der \glspl{Hop} zwischen den Szenarien.
+Zunächst ist hier eine leichte Minimierung der \glspl{Hop} durch die Wanderung in der ersten Messreihe zu verzeichnen.
+Doch zeigt sich auch, dass in diesem kleinen \gls{IoT}-Segment aus 20~Knoten die durchschnittliche Anzahl der \glspl{Hop} zwischen der zweiten und dritten Messreihe nicht verbessert, obwohl der Dienst in der dritten Messreihe nicht migriert wurde.
+Lediglich eine Differenz in der Standardabweichung ist vernehmbar.
+Die sukzessive Steigerung der \glspl{Hop} zwischen den Messreihen~3-6 (Szenarien~2-5) zeigen die Verbindungen über die Gateways und dem Internetknoten, wobei der im anderen \gls{IoT}-Segment~B wandernde Dienst (Szenario~5) auf den Gateway-Knoten platziert wird.
+\\
+Die Abbildung~\ref{fig:testcase5_server_results} vergleicht die Migrationen der Service~Manager im fünften Testfall.
+Da bei den Messreihen~2-4 keine Migrationen stattgefunden haben, ist der Dienst dort immer an der \glqq bestmöglichen\grqq{} Position aufzufinden.
+In der sechsten Messreihe hingegen bestätigt sich hier nochmals, was bereits durch den Mittelwert der Leistungsmetrik \gls{Hop} zu verzeichnen war.
+Es wurden keine Migrationen durchgeführt.
+Da die erste Ausführung des Dienstes auf dem Gateway-Knoten stattfindet und die Clients den Dienst nur über den Internetknoten erreichen können, wird er ohne Migration dort kontinuierlich ausgeführt.
+Die erste Messreihe verzeichnet jedoch insgesamt eine sehr hohe Anzahl Migrationen im Vergleich zum ersten Testfall im verlustfreien Netzwerk (vgl.~Abbildung~\ref{fig:testcase1_server_results}, Messreihe~1).
+In nur 10\% aller Migrationszyklen blieb eine Migration aus.
+Im Vergleich ist das Ergebnis der zweiten Messreihe deutlich besser.
+Die Anzahl der Migrationen wurde deutlich verringert, abgelehnt durch die Findung des bereits besten Knotens zur Ausführung des Dienstes und durch die Betrachtung des Schwellwertes.
+Das lässt vermuten, dass durch die geringere Anzahl Hosts weniger Möglichkeiten übrig bleiben, den Dienst näher an die Clients zu platzieren und so eine ausgewogenere Bereitstellung zwischen den Clients möglich ist.
+Die in den Messreihen zu verzeichnende hohe Anzahl Migrationsfehler ist durch ungewollte Timeouts im Netzwerk zu erklären.
+Ein Problem, dass durch die Timeouts bei der Migration hervorgerufen werden kann und hier zu lösen gilt, ist eine ungewollte Duplikation des Dienstes auf zwei Hosts.
+Schlägt der letzte Handshake während des Migrationsprozesses fehl, kann nicht sichergestellt werden, dass nur eine Instanz des Dienstes im System existiert, was schließlich ohne Synchronisierung der Instanzen zu einer Dateninkonsistenz führen kann.
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase6_client_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis} [
+	boxplot chart style,
+	%x axis large text label,
+	ymode=log,
+	ymax=150000,
+	ymin=0.05,
+	xtick={1, 2, 3, 4, 5},
+	xticklabels={(1),(2),(3),(4),(5)},
+	ylabel={\yaxislogscaletext},
+	xlabel={Szenario in der simulierten Testumgebung}]
+	\pgfplotsinvokeforeach{0,...,4} {
+		\pgfplotstablegetelem{#1}{om}\of\datatable
+		\edef\outliers{\pgfplotsretval}
+		\addplot[mark=x,
+		boxplot prepared from table={
+			table=\datatable,
+			row=#1,
+			lower whisker=lw,
+			upper whisker=uw,
+			lower quartile=lq,
+			upper quartile=uq,
+			median=med
+		}, boxplot prepared
+		]
+		coordinates {\outliers};
+	}
+	\end{axis}
+	\end{tikzpicture}
+	\caption[Vergleich der RTT zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten IoT mit zehn Clients aus zwei IoT-Segmente]{Vergleich der \gls{RTT} zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten \gls{IoT} mit zehn Clients aus zwei \gls{IoT}-Segmente. Die Szenarien stellen eine schrittweise Veränderung der Positionierung eines Dienstes im \gls{IoT} dar.}
+	\label{fig:testcase6_client_results}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\pgfplotstableread [col sep=semicolon]{./tables/testcase6_server_results.csv} {\datatable}
+	\begin{tikzpicture}
+	\begin{axis}[
+	grouped bar chart style,
+	y axis percentage style,
+	%x axis large text label,
+	xticklabels={(1),(2),(3),(4),(5)},
+	ylabel={\yaxispercentagetext},
+	xlabel={Szenario in der simulierten Testumgebung}]
+	
+	\addplot [style={bblue,fill=bblue,mark=none}] table[x expr=\coordindex+1, y=migrations_done_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={oorange,fill=oorange,mark=none}]	table[x expr=\coordindex+1,
+	y=migration_rejected_mig_tresh_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={ggreen,fill=ggreen,mark=none}] table[x expr=\coordindex+1, y=migration_rejected_num1_percentage, col sep=semicolon] {\datatable};
+	\addplot [style={rred,fill=rred,mark=none}] table[x expr=\coordindex+1, y=migrations_error_percentage, col sep=semicolon] {\datatable};
+	
+	\legend{Vollstände Migration,Abgelehnte Migration (Schwelle),Abgelehnte Migration (Bester Server),Migrationsfehler}
+	\end{axis};
+	\end{tikzpicture}
+	\caption[Vergleich der Migrationen zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten IoT mit zehn Clients aus zwei IoT-Segmenten]{Vergleich der Migrationen zwischen unterschiedlichen Szenarien im verlustbehafteten, segmentierten \gls{IoT} mit zehn Clients aus zwei \gls{IoT}-Segmenten. Die Szenarien stellen eine schrittweise Veränderung der Positionierung eines Dienstes im \gls{IoT} dar. Die Szenarien~3-5 sind fixiert, weshalb keine Migrationen des Dienstes stattfinden und sich dieser immer an der \glqq besten\grqq{} Position im \gls{IoT} befindet. \graphicserverdescriptionshort}
+	\label{fig:testcase6_server_results}
+\end{figure}
+
+Der sechste und damit letzte Testfall emuliert ebenfalls die Bereitstellung eines Dienstes in einem verlustbehafteten \gls{IoT} und vergleicht dieselben Szenarien untereinander.
+Einzig das Szenario~1a mit dedizierten Dienstknoten im \gls{IoT}-Segment~A wird außer Acht gelassen, da eine Untersuchung der Szenarien mit mehreren \gls{IoT}-Segmenten im Vordergrund steht.
+Im Unterschied zum fünften Testfall wird hier überprüft, ob auch eine Veränderung in den Leistungsmetriken \gls{RTT}, der Verlustrate und der \glspl{Hop} festzustellen ist, wenn gleichzeitig in beiden \gls{IoT}-Segmenten jeweils fünf und somit insgesamt zehn Performance-Clients Anfragen an den Dienst stellen.
+%das szenario mit dem wandernden dienst wird hier nicht aufgeführt, da sich bereits gezeigt hat, dass der dienst immer direkt zum gateway wandert,
+\\
+Die Abbildung~\ref{fig:testcase6_client_results} zeigt die Ergebnisse der \gls{RTT}-Messung der 10~Performance-Clients.
+Hier zeigt sich ein großer Unterschied der ersten Messreihe zu der vom fünften Testfall in Abbildung~\ref{fig:testcase5_client_results}.
+Durch die fünf zusätzlichen Clients in dem anderen \gls{IoT}-Segment nähert sich die \gls{RTT} deutlich den Ergebnissen der anderen Messreihen~2-5 an.
+Einzig das Minimum, angegeben durch den unteren Whisker, scheint in der Messreihe deutlich niedriger zu sein.
+Der Grund dafür könnte eine stattgefundene Migration innerhalb des \gls{IoT}-Segments~A sein.
+Hat ein Client erst sehr spät eine Leerung seines Pausenkontos \(K\) vorgenommen, verzögerte sich das Ende seiner Ausführung.
+Dadurch könnte der Dienst am Ende der gesamten Messung zu diesem Client migriert worden und schließlich eine kurze \gls{RTT} entstanden sein.
+Die restlichen Messreihen weisen nur sehr mäßige Unterschiede auf, die sich durch Schwankungen bei dem Anfrageschema der Performance-Clients oder auch durch leichte Unterschiede in der Struktur zwischen den beiden \gls{IoT}-Segmenten~A~und~B begründen lassen.
+Sind die Wege zwischen den Performance-Clients und dem dienstausführenden Objekten in einem der \gls{IoT}-Segmente kürzer, so hat dies Einfluss auf die erhobene \gls{RTT}.
+Zu beachten ist hier, dass für die Verbindungen zum Internet ein Durchsatz von 50~Mbit/s und keine Verlustrate angenommen wurde. Es ist zu erwarten, dass eine Veränderung der Verbindungen Auswirkungen auf die Messungen in diesem Testfall haben.
+\begin{table}[h]
+	\centering
+	\pgfkeys{/pgf/number format/.cd,
+		use comma, fixed, fixed zerofill, precision=2, 1000 sep={.}}
+	\pgfplotstabletypeset[
+	col sep=semicolon,
+	columns/rtt_mean/.style={column name=\(M_{\text{RTT}}\) (in ms), column type/.add={}{|}},
+	columns/rtt_stdev/.style={column name=\(SD_{\text{RTT}}\) (in ms), column type/.add={}{|}},
+	columns/reconnection_mean/.style={column name=\(M_{\text{Fehlvers.}}\), column type/.add={}{|}},
+	columns/reconnection_stdev/.style={column name=\(SD_{\text{Fehlvers.}}\), column type/.add={}{|}},
+	columns/hop_mean/.style={column name=\(M_{\text{Hop}}\), column type/.add={}{|}},
+	columns/hop_stdev/.style={column name=\(SD_{\text{Hop}}\)},
+	create on use/szenario/.style={
+		create col/set list={1,2,3,4,5}
+	},
+	columns/szenario/.style={column name=Szenarien,string type,column type/.add={}{|}},
+	every head row/.style={
+		before row=\toprule,
+		after row=\midrule
+	},
+	every last row/.style={
+		after row=\bottomrule
+	},
+	columns={szenario,rtt_mean,rtt_stdev,reconnection_mean,reconnection_stdev,hop_mean,hop_stdev},
+	]{./tables/testcase6_client_results.csv}
+	\caption[Vergleich der Szenarien im sechsten Testfall anhand von Leistungsmetriken über Mittelwert und Standardabweichung]{Vergleich der Szenarien im sechsten Testfall anhand von Leistungsmetriken über Mittelwert und Standardabweichung. Der Vergleich findet über die der Leistungsmetriken \gls{RTT}, \gls{Hop} und der Fehlversuche bei den Messungen der Performance-Clients statt.}
+	\label{tab:testcase6_mean_stdev}
+\end{table}
+\\
+Analog zur Abbildung~\ref{fig:testcase6_client_results} zeigt sich auch bei den Mittelwerten eine Angleichung zwischen den Szenarien (vgl.~Tabelle~\ref{tab:testcase6_mean_stdev}).
+Wie bereits eine Veränderung im ersten Szenario zu erkennen war, wird diese auch hier im Mittelwert der \gls{RTT} widergespiegelt.
+Untereinander ist ein einziger Unterschied zwischen dem ersten und fünften Szenario festzustellen, der durch die geringen \gls{RTT}-Werte in der ersten Messreihe zu begründen ist.
+Insgesamt haben sich die Standardabweichungen auf einem hohen Niveau eingependelt.
+Im Vergleich zum fünften Testfall sind die Fehlversuche durch die fünf zusätzlichen Clients in allen Szenarien insgesamt angestiegen.
+Sie befinden sich auf dem gleichen Level, wie die ersten Messreihe aus dem fünften Testfall, bei der eine Migration im \gls{IoT}-Segment~A stattfand.
+Die \glspl{Hop} haben sich hingegen auf ein einheitliches Niveau eingependelt.
+Der kleine Anstieg im vierten Szenario ist durch die Gleichheit der beiden \gls{IoT}-Segmente und dem genau mittig zwischen ihnen platzierten Internetknoten entstanden.
+\\
+Ein Vergleich des Migrationsverhaltens der Service~Manager zwischen den Szenarien in Abbildung~\ref{fig:testcase6_server_results} zeigt deutlich die bereits beschriebenen Migrationen im ersten Szenario.
+Während im fünfte Szenario die Service~Manager in weniger als 1\% der Zyklen Migrationen durchführen, weist das erste Szenario in 7,2\% aller Zyklen Migrationen und in 2,8\% der Fälle eine Migrationsablehnung aufgrund des Schwellwertes auf.
+Die anderen Messreihen enthalten durch die Festlegung des Diensten auf eine fixierte Position im gesamten Netzwerk wie bereits im fünften Testfall keine Migrationen auf.
+
+%\section{Zusammenfassung der Testfälle}
+In den verschiedenen Testfällen der Evaluationen konnte insgesamt ein positives Ergebnis bei der Bereitstellung migrierender Dienste im \gls{IoT} festgestellt werden.
+So zeigten die ersten vier Testfälle die Beeinflussung der verschiedenen Variablen auf die Entscheidung zur Migration.
+Die Steigerung der Anzahl Nachrichten pro Minute verursachte eine Erhöhung der \gls{RTT} aufgrund der Auslastung des Netzes, einhergehend reduzierte sich prozentual die Anzahl durchgeführter Migrationen.
+Dies zeigte sich auch bei der Steigerung des Migrationszyklus, denn hier konnte die Steigerung zur Minimierung der Anzahl Migrationen beitragen.
+Der dritte Testfall machte deutlich, dass die Erhöhung aller Nachrichten der Clients im gleichbleibenden Verhalten untereinander keinen Einfluss auf die Migrationen hat. 
+Erst als sich das Anfragemuster der Performance-Clients änderte, verhielt sich die Service~Manager Plattform unterschiedlich bei dem Migrationsverhalten zwischen den Messreihen.
+Je mehr Nachrichten pro Minute gesendet wurden, desto besser hat dieser ein Objekt im \gls{IoT} gefunden, das für die Bereitstellung optimal war.
+Aufgrund der vielen Nachrichten pro Minute stieg jedoch die \gls{RTT} dieser Messreihe.
+\\
+Abschließend konnte mithilfe der letzten beiden Testfällen die Frage geklärt werden, auf welchen Objekten die Bereitstellung der Dienste die besten Resultate auf die Latenzzeit respektive \gls{RTT} hat.
+Durch die Migration der Dienste im verlustbehafteten \gls{IoT} zeigte sich eine positiv zu verzeichnende Minimierung in der \gls{RTT} um den Faktor~20 im Median und Faktor~2 im Durchschnitt gegenüber festgesetzten Standorten, wie die Edge-Gateways des \glsmgen{IoT} oder ein Standort im Internet.
+Dieser Faktor wurde jedoch reduziert, wenn für den Dienst speziell dedizierte Objekte im \gls{IoT} ausgewählt und die Objekte der Clients für die Ausführung des Dienstes ausgeschlossen wurden.
+Einhergehend konnten durch die Migration jedoch auch ein leichter Anstieg von Fehlversuchen beim Verbindungsaufbau der Clients gemessen werden, da zum Messzeitpunkt der Standort des Dienstes einigen Clients nicht bekannt war.
+Der sechste Testfall zeigte die Problematiken der Migration eines segmentierten \glsmgen{IoT}.
+Ist eine Segmentierung des \glsmgen{IoT} vorhanden und sind die Clients in allen Bereichen des globalen \glsmgen{IoT} vertreten, so hat die Migration innerhalb eines einzelnen \gls{IoT}-Segments keine Auswirkung mehr.
+%
+\\
+%2017-01-11 14:52:43.610 WARN  [n.f.t.TopologyInstance] Could not find route from                  00:00:00:00:00:00:00:32 to 00:00:00:00:00:00:00:21. If the path exists, wait for the topology to settle, and it will be detected
+Bei der Emulation des verlustbehafteten \glsmgen{IoT} entstanden jedoch auch Probleme, denn der \gls{SDN}-Controller des virtuellen Netzwerkes hat in dem verlustbehafteten Netzwerk nicht immer alle Routen zwischen den vorhandenen Switches finden können.
+Darauf folgten schließlich Verbindungsverluste und einhergehend ein Abbruch der jeweiligen Messung in dem virtuellen Netzwerk.
+Auch entstanden Probleme im \gls{SDN}-Controller bei der Vergrößerung des Netzwerkes.
+Die maximalen Grenzen waren sehr schnell erreicht und hatten einen Absturz des \gls{SDN}-Controllers zur Folge, wenn weitere Objekte oder Verbindungen hinzugefügt wurden.

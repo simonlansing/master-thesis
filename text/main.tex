@@ -1,0 +1,110 @@
+%%% optionally include ngerman in the document class options list
+\documentclass[ngerman, paper=a4, 11pt,  twoside, openright, BCOR=7mm, DIV12, headinclude=false, listof=totoc, index=totoc,bibliography=totoc,headinclude=false]{scrreprt}
+
+% use oneside instead of twoside for better pdf readability:
+%\documentclass[ngerman, paper=a4, 11pt, cleardoubleempty, oneside, openright, BCOR=7mm, DIV12, listof=totoc, index=totoc,bibliography=totoc, headinclude=false]{scrreprt}
+
+\usepackage[ngerman]{comsys-format}
+\usepackage{comsys-format-additional}
+\usepackage{comsys-format-additional-tikz}
+
+\title{Migration autonomer Dienste im Internet der Dinge anhand topologischer Charakteristika}
+\author{Simon Lansing}
+\matrikelno{private}
+\thesis{Masterarbeit}
+\assistentName{MSc. Tim Löpmeier}
+\date{08. Februar 2017}
+
+\errorcontextlines=200
+
+
+\DefineBibliographyStrings{ngerman}{
+	andothers = {{et\,al\adddot}},
+	mathesis = {Masterarbeit},
+}
+
+\automark[section]{chapter}
+%Declare new math operators
+\DeclareMathOperator{\dom}{dom}
+%Help Latex with hyphenation
+\hyphenation{ge-sam-melt for-war-ding}
+%Theorem, Satz..
+\newtheorem{theorem}{Theorem}
+\newtheorem{satz}{Satz}
+
+\begin{document}
+	%===================================
+	% Disable "a for ä
+	%===================================
+	\shorthandoff{"}
+	%===================================
+	%Print a todo-list if necessary
+	%===================================
+	%\listoftodos
+
+	%===================================
+	% Titlepage
+	%===================================
+	\pagenumbering{roman}
+
+	% Titelblatt
+	\maketitle
+	\cleardoublepage
+ 
+	%===================================
+	% Official parts
+	%===================================
+	\input{text/abstract}
+	\cleardoublepage
+	\setcounter{tocdepth}{4}
+	\tableofcontents
+	\listoffigures
+	\listoftables
+	\lstlistoflistings
+	\printglossary[type=\acronymtype]
+	\printglossary
+
+    \cleardoublepage
+    \pagenumbering{arabic}
+
+	%===================================
+	% Main part of the text
+	%===================================
+	\input{text/1-motivation}
+	\input{text/2-autonome_dienste}
+	\input{text/3-topologische_charakteristika}
+	\input{text/4-service_manager}
+	\input{text/5-evaluation}
+	\input{text/6-fazit-und-ausblick}
+
+	\appendix
+	%===================================
+	% Bibliography, insert via bibtex
+	%===================================
+	%\nocite{*}
+	\ifdefined\usebusybiber
+		\printbibliography
+	\else
+		\bibliographystyle{unsrt}
+		\bibliography{bibliography.bib}
+	\fi
+	%===================================
+	% Appendix part, e.g. sourcecode
+	%===================================
+	\cleardoublepage
+	\phantomsection
+	\rehead{\appendixname}
+	\addcontentsline{toc}{chapter}{\appendixname}
+	\stepcounter{chapter}
+	\chapter*{\appendixname}
+
+
+    \input{text/A-Appendix}
+
+    %===================================
+    % Offical part 3
+    %===================================
+    \cleardoublepage
+    \pagestyle{empty}
+   	\affirmation
+\end{document}

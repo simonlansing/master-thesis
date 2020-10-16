@@ -1,0 +1,127 @@
+\documentclass[ngerman, 11pt]{standalone}
+\usepackage[ngerman]{babel} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usepackage{tikz-uml}
+
+\begin{document}
+\begin{tikzpicture}
+    \tikzumlset{fill object = white, fill call = gray!20} 
+    \begin{umlseqdiag}
+        \umlobject[class=Service Manager]{Host A}
+        \umlobject[class=Service Manager, x=7]{Host B}
+
+        \begin{umlcall}[op=connect(), dt=5]{Host A}{Host B}
+        
+        \begin{umlfragment} [type=alt , label=Service not started yet]
+		    \begin{umlcall}[op=ACCEPTED, dt=5, type=return]{Host B}{Host A}
+			\end{umlcall}
+			\begin{umlcall}[op=send service files and configuration]{Host A}{Host B}
+			\end{umlcall}
+			
+		   \begin{umlfragment} [type=alt , label={files and configuration consistent}, inner xsep=9]
+			    \begin{umlcallself}[op=cb\_service\_received(), type=synchron,
+				    return=service\_status]{Host B}		    
+			    \begin{umlcallself}[op=start\_service(), type=asynchron]{Host B}
+			    \end{umlcallself}
+			    \end{umlcallself}
+
+				\begin{umlfragment} [type=alt , label=Service started, inner xsep=16]
+					\begin{umlcall}[op=OKAY, type=return]{Host B}{Host A}
+					\end{umlcall}
+					\begin{umlcallself}[op=stop\_service(), type=synchron]{Host A}
+					\end{umlcallself}
+
+				\umlfpart [Service not started]
+					\begin{umlcall}[op=INTERNAL SERVER ERROR, type=return, dt=14]{Host B}{Host A}
+					\end{umlcall}
+					\begin{umlcallself}[op=restart\_migration\_check(), type=synchron]{Host A}
+					\end{umlcallself}
+				\end{umlfragment}
+			\umlfpart [missing files or informations]
+				\begin{umlcall}[op=TRANSPORT ERROR, type=return, dt=14]{Host B}{Host A}
+				\end{umlcall}
+				\begin{umlcallself}[op=restart\_migration\_check(), type=synchron]{Host A}
+				\end{umlcallself}
+			\end{umlfragment}
+        \umlfpart [Service already started]
+	        \begin{umlcall}[op=CONFLICT, type=return, dt=14]{Host B}{Host A}
+			\end{umlcall}
+			\begin{umlcallself}[op=restart\_migration\_check(), type=synchron]{Host A}
+			\end{umlcallself}
+			
+        \end{umlfragment}
+        
+    	\begin{umlfragment} [type=neg]
+	        \begin{umlcall}[op=timeout,dt=15]{Host B}{Host A}
+	        \end{umlcall}
+	        \begin{umlcallself}[op=restart\_migration\_check(), type=synchron]{Host A}
+	        \end{umlcallself}
+        \end{umlfragment}
+        
+        \end{umlcall}
+    \end{umlseqdiag}
+\end{tikzpicture}
+
+%\begin{sequencediagram}
+%	\newthread{A}{Sender A:Service Manager}
+%	\newinst[2]{B}{Receiver B:Service Manager}
+%	%\newthread{C}{Sender C:Service Manager}
+%	
+%	%\mess{A}{connect()}{B}
+%	\begin{messcall}{A}{connect()}{B}
+%		\begin{sdblock}{alt}{[Service not started yet]}
+%			
+%			\mess[1]{B}{ACCEPTED}{A}
+%			\mess[1]{A}{send service files and configuration}{B}
+%			
+%			\begin{sdblock}{alt}{[consistent files and configuration]}
+%				
+%				\begin{call}{B}{cb\_service\_received()}{B}{service status}
+%				\end{call}
+%				
+%				\begin{sdblock}{alt}{[service started]}
+%					\mess[1]{B}{OKAY}{A}	
+%					\stepcounter{seqlevel} %Vertical empty space between `calls`
+%					\mess[1]{B}{INTERNAL SERVER ERROR}{A}
+%				\end{sdblock}
+%				\path (nw)--coordinate (aux) (se); 
+%				\draw[dashed] (nw|-aux)--(aux-|se);	
+%				
+%				\stepcounter{seqlevel} %Vertical empty space between `calls`
+%				
+%				\begin{call}{B}{cb\_reset\_service()}{B}{}
+%				\end{call}
+%				\mess[1]{B}{TRANSPORT ERROR}{A}
+%				
+%				\begin{call}{A}{restart\_service()}{A}{}
+%				\end{call}
+%				
+%			\end{sdblock}
+%			\path (nw)--coordinate (aux) (se); 
+%			\draw[dashed] ([yshift=-1.25cm]nw|-aux)--([yshift=-1.25cm]aux-|se);	
+%			
+%			%\begin{call}{A}{if\_true()}{B}{}
+%			%\end{call}
+%			
+%			\stepcounter{seqlevel} %Vertical empty space between `calls`
+%			
+%			\mess[1]{B}{CONFLICT}{A}
+%			\begin{call}{A}{restart\_service()}{A}{}
+%			\end{call}
+%		\end{sdblock}
+%		
+%		\path (nw)--coordinate (aux) (se); 
+%		\draw[dashed] ([yshift=-6cm]nw|-aux)--([yshift=-6cm]aux-|se);	
+%		
+%		\begin{sdblock}{neg}{}
+%			\mess[1]{B}{timeout}{A}
+%			\begin{call}{A}{restart\_service()}{A}{}
+%			\end{call}
+%		\end{sdblock}
+%		
+%	\end{messcall}
+%	
+%\end{sequencediagram}
+\end{document}

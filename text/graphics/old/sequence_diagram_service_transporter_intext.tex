@@ -1,0 +1,46 @@
+\documentclass[ngerman, 11pt]{standalone}
+\usepackage[ngerman]{babel} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usepackage{tikz-uml}
+
+\begin{document}
+	\begin{tikzpicture}
+	\tikzumlset{fill object = white, fill call = gray!20} 
+	\begin{umlseqdiag}
+	\umlobject[class=Service Manager]{Host A}
+	\umlobject[class=Service Manager, x=7]{Host B}
+	
+	\begin{umlcall}[op=connect(), dt=5, return=OKAY]{Host A}{Host B}
+	
+	\begin{umlcall}[op=ACCEPTED, type=return, dt=5]{Host B}{Host A}
+	\end{umlcall}
+	\begin{umlcall}[op=send service files and configuration]{Host A}{Host B}
+	\end{umlcall}
+	
+	\begin{umlcallself}[name=cbservicereceived, type=synchron]{Host B}		
+	\end{umlcallself}
+	    
+	\begin{umlcallself}[name=startservice, type=asynchron]{Host B}
+	\end{umlcallself}
+	
+	\begin{umlcallself}[name=servicestatus, type=return]{Host B}
+	\end{umlcallself}
+
+	\end{umlcall}
+	\begin{umlcallself}[op=stop\_service(), type=synchron]{Host A}
+	\end{umlcallself}
+	
+	\begin{umlfragment} [type=neg]
+	\begin{umlcall}[op=timeout,dt=15]{Host B}{Host A}
+	\end{umlcall}
+	\begin{umlcallself}[op=restart\_migration\_check(), type=synchron]{Host A}
+	\end{umlcallself}
+	\end{umlfragment}
+	\end{umlseqdiag}
+	\node [anchor=west,yshift=1] at (st-cbservicereceived.north east) {cb\_service\_received()};
+	\node [anchor=west,yshift=1] at (st-startservice.north east) {start\_service()};
+	\node [anchor=west,yshift=1] at (st-servicestatus.north east) {service\_status};
+	\end{tikzpicture}
+\end{document}
